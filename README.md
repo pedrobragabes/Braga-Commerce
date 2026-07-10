@@ -19,12 +19,13 @@ Catálogo, categorias, variações, estoque simples, carrinho, checkout, pedido,
 ```bash
 npm install
 Copy-Item .env.example .env
-npx prisma migrate dev
-npx prisma db seed
+npm run db:up
+npm run db:migrate
+npm run db:seed
 npm run dev
 ```
 
-Configure `DATABASE_URL` em `.env` antes de criar a migration ou rodar o seed. O seed cria a PV Moda Masculina e as categorias iniciais.
+Configure `DATABASE_URL` em `.env` antes de criar a migration ou rodar o seed. O `docker-compose.yml` fornece PostgreSQL 16 local na URL padrão; Supabase também é suportado. O seed cria a PV Moda Masculina e as categorias iniciais. Veja [desenvolvimento local](docs/11-local-development.md).
 
 ## Scripts
 
@@ -34,6 +35,9 @@ npm run build
 npm run lint
 npm run typecheck
 npm run test
+npm run db:up
+npm run db:migrate
+npm run db:migrate:deploy
 npm run db:studio
 ```
 
