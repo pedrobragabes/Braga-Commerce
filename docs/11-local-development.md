@@ -4,6 +4,8 @@
 
 O projeto inclui PostgreSQL 16 para desenvolvimento via Docker Compose. A URL padrão da `.env.example` já aponta para esse serviço.
 
+O Docker Desktop precisa ter suporte a virtualização ativo. Se ele informar que a virtualização não foi detectada, use uma máquina com virtualização habilitada ou configure uma instância Supabase; o Compose não conseguirá iniciar nesse computador.
+
 ```powershell
 Copy-Item .env.example .env
 npm run db:up

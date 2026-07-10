@@ -208,6 +208,9 @@ CREATE UNIQUE INDEX "Category_storeId_slug_key" ON "Category"("storeId", "slug")
 CREATE UNIQUE INDEX "Product_storeId_slug_key" ON "Product"("storeId", "slug");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "ProductVariant_productId_sku_key" ON "ProductVariant"("productId", "sku");
+
+-- CreateIndex
 CREATE INDEX "Order_storeId_status_idx" ON "Order"("storeId", "status");
 
 -- CreateIndex

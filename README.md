@@ -25,7 +25,7 @@ npm run db:seed
 npm run dev
 ```
 
-Configure `DATABASE_URL` em `.env` antes de criar a migration ou rodar o seed. O `docker-compose.yml` fornece PostgreSQL 16 local na URL padrão; Supabase também é suportado. O seed cria a PV Moda Masculina e as categorias iniciais. Veja [desenvolvimento local](docs/11-local-development.md).
+Configure `DATABASE_URL` em `.env` antes de criar a migration ou rodar o seed. O `docker-compose.yml` fornece PostgreSQL 16 local na URL padrão; Supabase também é suportado. O seed cria a PV Moda Masculina com seis categorias, seis produtos e variações de tamanho/cor. Veja [desenvolvimento local](docs/11-local-development.md).
 
 ## Scripts
 

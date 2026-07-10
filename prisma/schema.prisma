@@ -127,6 +127,8 @@ model ProductVariant {
   stockQuantity Int         @default(0)
   isActive      Boolean     @default(true)
   orderItems    OrderItem[]
+
+  @@unique([productId, sku])
 }
 
 model Customer {
