@@ -14,8 +14,12 @@
     "test:watch": "vitest",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:up": "docker compose up -d database",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f database"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
