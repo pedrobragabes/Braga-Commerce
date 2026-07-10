@@ -5,6 +5,7 @@
   "description": "Base de e-commerce low cost para pequenos comercios locais.",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "prisma generate",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
