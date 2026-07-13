@@ -31,6 +31,8 @@ function mapProduct(product: {
   shortDescription: string | null;
   description: string | null;
   basePriceCents: number;
+  stockQuantity: number;
+  hasVariants: boolean;
   compareAtCents: number | null;
   isFeatured: boolean;
   category: { name: string; slug: string } | null;
@@ -47,7 +49,10 @@ function mapProduct(product: {
 }): StorefrontProduct {
   return {
     ...product,
-    available: product.variants.some((variant) => variant.stockQuantity > 0),
+    variants: product.hasVariants ? product.variants : [],
+    available: product.hasVariants
+      ? product.variants.some((variant) => variant.stockQuantity > 0)
+      : product.stockQuantity > 0,
   };
 }
 

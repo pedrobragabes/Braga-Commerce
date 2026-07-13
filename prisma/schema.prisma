@@ -47,15 +47,18 @@ model StoreSettings {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  storeId   String
-  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  name      String
-  email     String   @unique
-  role      UserRole @default(ADMIN)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  authUserId String?  @unique
+  storeId    String
+  store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name       String
+  email      String   @unique
+  role       UserRole @default(ADMIN)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([storeId, role])
 }
 
 enum UserRole {
@@ -93,6 +96,7 @@ model Product {
   shortDescription String?
   sku              String?
   basePriceCents   Int
+  stockQuantity   Int              @default(0)
   compareAtCents   Int?
   isActive         Boolean          @default(true)
   isFeatured       Boolean          @default(false)
@@ -169,6 +173,7 @@ model Order {
   mercadoPagoPreferenceId  String?
   mercadoPagoPaymentId     String?
   notes                    String?
+  internalNote             String?
   items                    OrderItem[]
   paymentEvents            PaymentEvent[]
   createdAt                DateTime          @default(now())

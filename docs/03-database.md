@@ -14,6 +14,9 @@
 - `Store.slug` e `storeId + slug` são únicos.
 - Imagens e variações são apagadas com o produto; pedidos conservam os snapshots de item.
 - O total é calculado no servidor a partir de produtos e variações ativos.
+- `User.authUserId` vincula Supabase Auth ao operador e `storeId` limita toda operação administrativa.
+- Produto simples usa `Product.stockQuantity`; produto com grade usa o estoque de cada `ProductVariant`.
+- A observação do cliente (`notes`) e a nota interna (`internalNote`) são campos distintos.
 
 ## Migrations
 

@@ -21,3 +21,10 @@ Sem credenciais de teste, os testes locais cobrem configuração, seleção segu
 da URL, assinatura HMAC, mapeamento e proteção contra transições antigas. O item
 de sandbox só pode ser fechado após um pagamento real de teste produzir uma
 preferência, retorno e `PaymentEvent` no banco.
+
+## Evidência do Milestone 4
+
+- Unitário: matriz OWNER/ADMIN/STAFF, transições de fulfillment, slug e dinheiro.
+- Integração: operador temporário no Supabase Auth vinculado a uma loja, login,
+  isolamento por `storeId` e CRUD com limpeza posterior.
+- Visual: dashboard, tabela, formulários e pedido em desktop/mobile.

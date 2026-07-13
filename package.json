@@ -20,11 +20,15 @@
     "db:studio": "prisma studio",
     "db:up": "docker compose up -d database",
     "db:down": "docker compose down",
-    "db:logs": "docker compose logs -f database"
+    "db:logs": "docker compose logs -f database",
+    "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
+    "admin:remove": "tsx scripts/remove-admin.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
+    "@supabase/ssr": "^0.12.1",
+    "@supabase/supabase-js": "^2.110.3",
     "dotenv": "^16.6.1",
     "mercadopago": "^3.2.0",
     "next": "^16.0.1",

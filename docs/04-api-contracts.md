@@ -44,3 +44,10 @@ sem alterar o pedido.
 ## `POST /api/upload` (Milestone 5)
 
 Exige admin autenticado. Aceita apenas JPG, PNG e WebP dentro do limite definido; retorna `{ url }`. Rejeita SVG, MIME inválido e tamanho excedido com `400`.
+
+## Mutações administrativas (Milestone 4)
+
+O MVP usa Server Actions para produtos, categorias, variações, pedidos e
+configurações. Toda action valida Zod/valores, sessão Supabase, operador Prisma,
+role e `storeId`. IDs enviados pelo formulário não concedem acesso a registros
+de outra loja. Estado de pagamento não é editável pelo painel operacional.

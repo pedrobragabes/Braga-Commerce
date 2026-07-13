@@ -39,6 +39,7 @@ npm run db:up
 npm run db:migrate
 npm run db:migrate:deploy
 npm run db:studio
+npm run admin:bootstrap
 ```
 
 ## Documentação
@@ -49,4 +50,4 @@ evidências e publicação está em [`docs/12-delivery-workflow.md`](docs/12-del
 
 ## Status
 
-Milestones 0, 1 e 2 concluídos. Milestone 3 — integração Mercado Pago e webhook.
+Milestones 0, 1 e 2 concluídos. M3 aguarda credenciais sandbox; M4 — Admin MVP em execução.

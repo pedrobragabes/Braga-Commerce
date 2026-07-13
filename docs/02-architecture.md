@@ -45,6 +45,11 @@ O login do lojista entra no M4 para proteger produtos, estoque e pedidos. Uma
 conta opcional de consumidor, com histórico de compras, permanece no M7 e pode
 vincular pedidos anteriores por um processo verificado de e-mail ou telefone.
 
+No M4, o login do operador usa Supabase Auth e cookies SSR. A identidade externa
+é vinculada a `User.authUserId`; role e `storeId` continuam autoritativos no
+Prisma. `proxy.ts` renova a sessão, mas cada página e Server Action revalida
+identidade, operador ativo, loja ativa e permissão. Veja `13-admin-mvp.md`.
+
 ## Responsabilidades
 
 `app` compõe páginas e rotas; `storefront/components` contém a UI pública;

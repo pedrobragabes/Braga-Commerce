@@ -32,6 +32,8 @@ versionÃ¡-lo) e use os mesmos comandos.
 
 `migrate dev` é o fluxo local de criação de migrations; `migrate deploy` aplica migrations versionadas em staging ou produção.
 
-## Situação da migration inicial
+## Painel administrativo
 
-A migration `20260710142000_init` foi gerada a partir do schema e está versionada. Ela ainda precisa ser aplicada a uma instância PostgreSQL real antes de fechar a issue #2.
+Depois das migrations e do seed, configure um operador com as variáveis
+`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` e `ADMIN_ROLE` e execute
+`npm run admin:bootstrap`. Veja `docs/13-admin-mvp.md`.

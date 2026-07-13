@@ -67,6 +67,7 @@ export async function quoteCart(
       slug: true,
       sku: true,
       basePriceCents: true,
+      stockQuantity: true,
       hasVariants: true,
       category: { select: { slug: true } },
       images: { orderBy: { sortOrder: "asc" }, take: 1, select: { url: true } },
@@ -94,8 +95,10 @@ export async function quoteCart(
       throw new CartQuoteError(`A variação informada para ${product.name} é inválida.`, "INVALID_ITEM");
     }
 
-    const stockQuantity = variant?.stockQuantity ?? null;
-    const available = stockQuantity === null || stockQuantity >= item.quantity;
+    const stockQuantity = product.hasVariants
+      ? (variant?.stockQuantity ?? 0)
+      : product.stockQuantity;
+    const available = stockQuantity >= item.quantity;
     if (!available) issues.push(`${product.name}: apenas ${stockQuantity} unidade(s) disponível(is).`);
     const unitPriceCents = variant?.priceCents ?? product.basePriceCents;
 
