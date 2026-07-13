@@ -12,7 +12,15 @@ if (!connectionString) {
   );
 }
 
-const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({
+    connectionString,
+    // Supavisor's pooler can expose a certificate chain that Node does not
+    // trust by default. The connection remains encrypted; this only bypasses
+    // chain validation for this hosted database connection.
+    ssl: { rejectUnauthorized: false },
+  }),
+});
 
 async function main() {
   validatePvModaSeed();
