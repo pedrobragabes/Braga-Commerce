@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Braga Commerce",
-  description: "Base de e-commerce para pequenos comércios locais.",
+  title: {
+    default: "PV Moda Masculina",
+    template: "%s | PV Moda Masculina",
+  },
+  description: "Moda masculina com curadoria local, informação clara e atendimento próximo.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
+import { normalizePostgresUrl } from "../lib/database-url";
 import { PV_MODA_CATEGORIES, PV_MODA_PRODUCTS, validatePvModaSeed } from "./seed-data";
 
 const connectionString =
@@ -12,17 +13,9 @@ if (!connectionString) {
   );
 }
 
-const connectionUrl = new URL(connectionString);
-
-if (connectionUrl.hostname.endsWith(".pooler.supabase.com")) {
-  // Prisma 7 lets an sslmode query parameter override the adapter's `ssl`
-  // option. Supavisor uses a certificate chain Node cannot validate locally.
-  connectionUrl.searchParams.set("sslmode", "no-verify");
-}
-
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
-    connectionString: connectionUrl.toString(),
+    connectionString: normalizePostgresUrl(connectionString),
     // Supavisor's pooler can expose a certificate chain that Node does not
     // trust by default. The connection remains encrypted; this only bypasses
     // chain validation for this hosted database connection.
