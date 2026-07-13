@@ -14,6 +14,18 @@ Next.js na Vercel, PostgreSQL/Supabase, Supabase Storage, DNS Cloudflare e Merca
 6. Registrar URL pública do webhook no Mercado Pago e fazer pagamento sandbox/produção controlado.
 7. Ativar backup diário e testar restauração antes do go-live.
 
+## Mercado Pago na Vercel
+
+Configure `MERCADO_PAGO_ENV`, `MERCADO_PAGO_ACCESS_TOKEN`,
+`MERCADO_PAGO_WEBHOOK_SECRET` e `NEXT_PUBLIC_APP_URL` nos ambientes corretos do
+projeto. Depois do deploy, registre no painel do Mercado Pago:
+
+`https://SEU-DOMINIO/api/webhooks/mercadopago`
+
+Comece com credenciais de teste e `MERCADO_PAGO_ENV=sandbox`. Valide pelo menos
+aprovação, rejeição e repetição da mesma notificação antes de trocar para
+produção. Não copie token ou secret para variáveis `NEXT_PUBLIC_*`.
+
 ## Rollback
 
 Reverter a release na Vercel. Migrations são aditivas sempre que possível; rollback de banco exige migration própria e backup validado, não edição manual da base.

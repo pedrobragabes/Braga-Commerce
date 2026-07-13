@@ -43,8 +43,10 @@ npm run db:studio
 
 ## Documentação
 
-A documentação de produto, arquitetura, banco, API, segurança, deploy e roadmap está em [`docs/`](docs/). O trabalho ativo e as issues do Milestone 0 estão em [`docs/github/issues/milestone-0.md`](docs/github/issues/milestone-0.md).
+A documentação de produto, arquitetura, banco, API, segurança, deploy e roadmap
+está em [`docs/`](docs/). O formato obrigatório de milestones, issues, tarefas,
+evidências e publicação está em [`docs/12-delivery-workflow.md`](docs/12-delivery-workflow.md).
 
 ## Status
 
-Milestone 0 — setup e documentação.
+Milestones 0, 1 e 2 concluídos. Milestone 3 — integração Mercado Pago e webhook.

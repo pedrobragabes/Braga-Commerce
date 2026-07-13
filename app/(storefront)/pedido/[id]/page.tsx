@@ -2,14 +2,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StoreIcon } from "../../../../storefront/components/icons";
+import { PaymentStatusNotice } from "../../../../storefront/checkout/payment-status-notice";
 import { pvModaConfig } from "../../../../storefront/config/pv-moda";
 import { getPublicOrder, getStoreNavigation } from "../../../../storefront/data";
 import { formatCurrency, normalizeWhatsapp } from "../../../../storefront/format";
 
 export const metadata: Metadata = { title: "Pedido recebido" };
 
-export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function OrderPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ payment?: string }>;
+}) {
   const { id } = await params;
+  const { payment } = await searchParams;
   const [order, navigation] = await Promise.all([
     getPublicOrder(pvModaConfig.storeSlug, id),
     getStoreNavigation(pvModaConfig.storeSlug),
@@ -26,8 +34,13 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           <span className="success-mark"><StoreIcon name="check" size={38} /></span>
           <p className="section-eyebrow">Pedido recebido</p>
           <h1>Agora é com a PV Moda.</h1>
-          <p>Seu pedido foi criado como pendente. A loja poderá confirmar disponibilidade, retirada ou entrega antes do pagamento.</p>
+          <p>Seu pedido está salvo. A confirmação do pagamento e o andamento da retirada ou entrega aparecerão aqui.</p>
           <div className="order-code"><small>Código do pedido</small><strong>{order.id}</strong></div>
+          <PaymentStatusNotice
+            initialStatus={order.paymentStatus}
+            orderId={order.id}
+            returnHint={payment === "success" || payment === "pending" || payment === "failure" || payment === "unavailable" ? payment : null}
+          />
           <div className="success-actions">
             {phone ? <a className="primary-button" href={`https://wa.me/${phone}?text=${encodeURIComponent(message)}`} rel="noreferrer" target="_blank"><StoreIcon name="whatsapp" /> Falar sobre o pedido</a> : null}
             <Link className="secondary-button" href="/produtos">Voltar à loja</Link>
@@ -40,7 +53,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           <div className="summary-row"><span>Subtotal</span><strong>{formatCurrency(order.subtotalCents)}</strong></div>
           <div className="summary-row"><span>{order.deliveryMethod === "LOCAL_PICKUP" ? "Retirada" : "Entrega"}</span><strong>{order.shippingCents ? formatCurrency(order.shippingCents) : "Grátis"}</strong></div>
           <div className="summary-total"><span>Total</span><strong>{formatCurrency(order.totalCents)}</strong></div>
-          <p className="receipt-status"><span /> Aguardando atendimento</p>
+          <p className="receipt-status"><span /> {order.paymentStatus === "PAID" ? "Pagamento confirmado" : "Pedido salvo"}</p>
         </aside>
       </div>
     </section>

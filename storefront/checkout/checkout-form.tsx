@@ -63,7 +63,17 @@ export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error?.message ?? "Não foi possível criar o pedido.");
       clearCart();
-      router.push(`/pedido/${payload.orderId}`);
+      const preferenceResponse = await fetch("/api/payments/mercadopago/preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: payload.orderId }),
+      });
+      const preferencePayload = await preferenceResponse.json();
+      if (!preferenceResponse.ok) {
+        router.push(`/pedido/${payload.orderId}?payment=unavailable`);
+        return;
+      }
+      window.location.assign(preferencePayload.checkoutUrl);
     } catch (requestError) {
       setSubmitError(requestError instanceof Error ? requestError.message : "Não foi possível criar o pedido.");
       setSubmitting(false);
@@ -110,8 +120,8 @@ export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
         <div className="summary-row"><span>Subtotal</span><strong>{quote ? formatCurrency(quote.subtotalCents) : "—"}</strong></div>
         <div className="summary-row"><span>{deliveryMethod === "LOCAL_DELIVERY" ? "Entrega local" : "Retirada"}</span><strong>{shippingCents ? formatCurrency(shippingCents) : "Grátis"}</strong></div>
         <div className="summary-total"><span>Total</span><strong>{formatCurrency(totalCents)}</strong></div>
-        <button className="primary-button full" disabled={submitting || !quote || Boolean(quote.issues.length)} type="submit">{submitting ? "Criando pedido…" : "Criar pedido"} <StoreIcon name="arrow" /></button>
-        <p className="summary-note"><StoreIcon name="shield" size={17} /> O pagamento online será conectado no M3. Agora o pedido será criado como pendente para atendimento da loja.</p>
+        <button className="primary-button full" disabled={submitting || !quote || Boolean(quote.issues.length)} type="submit">{submitting ? "Preparando pagamento…" : "Criar pedido e pagar"} <StoreIcon name="arrow" /></button>
+        <p className="summary-note"><StoreIcon name="shield" size={17} /> Você pagará no ambiente seguro do Mercado Pago. O retorno ao site não confirma o pagamento; o pedido só muda após validação do webhook.</p>
       </aside>
     </form>
   );

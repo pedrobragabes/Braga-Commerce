@@ -1,0 +1,107 @@
+import { Payment, WebhookSignatureValidator } from "mercadopago";
+import { getDatabase } from "../database";
+import { getMercadoPagoClient, getMercadoPagoWebhookSecret } from "./config";
+import {
+  buildPaymentEventKey,
+  mapMercadoPagoStatus,
+  shouldApplyPaymentTransition,
+  type InternalPaymentStatus,
+} from "./status";
+
+export function validateMercadoPagoWebhookSignature(input: {
+  signature: string | null;
+  requestId: string | null;
+  dataId: string;
+  now?: () => number;
+}) {
+  WebhookSignatureValidator.validate({
+    xSignature: input.signature,
+    xRequestId: input.requestId,
+    dataId: input.dataId,
+    secret: getMercadoPagoWebhookSecret(),
+    toleranceSeconds: 600,
+    ...(input.now ? { now: input.now } : {}),
+  });
+}
+
+export async function processMercadoPagoPayment(
+  paymentId: string,
+  requestId: string | null,
+  eventType: string,
+) {
+  const payment = await new Payment(getMercadoPagoClient()).get({ id: paymentId });
+  const providerStatus = payment.status ?? "unknown";
+  const eventKey = buildPaymentEventKey(paymentId, providerStatus);
+  const database = getDatabase();
+
+  const existingEvent = await database.paymentEvent.findUnique({ where: { eventKey } });
+  if (existingEvent && existingEvent.result !== "RECEIVED") {
+    return { result: "DUPLICATE", orderId: existingEvent.orderId, providerStatus };
+  }
+
+  const metadataOrderId = payment.metadata && typeof payment.metadata === "object"
+    ? (payment.metadata as Record<string, unknown>).order_id
+    : undefined;
+  const orderId = typeof payment.external_reference === "string"
+    ? payment.external_reference
+    : typeof metadataOrderId === "string" ? metadataOrderId : null;
+  const transition = mapMercadoPagoStatus(providerStatus);
+  const order = orderId ? await database.order.findUnique({
+    where: { id: orderId },
+    select: { id: true, totalCents: true, paymentStatus: true, mercadoPagoPaymentId: true },
+  }) : null;
+  const amountCents = typeof payment.transaction_amount === "number"
+    ? Math.round(payment.transaction_amount * 100)
+    : null;
+
+  return database.$transaction(async (transaction) => {
+    const event = await transaction.paymentEvent.upsert({
+      where: { eventKey },
+      update: {},
+      create: {
+        eventKey,
+        provider: "mercadopago",
+        providerEventId: paymentId,
+        providerStatus,
+        eventType,
+        result: "RECEIVED",
+        requestId,
+      },
+    });
+
+    if (event.result !== "RECEIVED") {
+      return { result: "DUPLICATE", orderId: event.orderId, providerStatus };
+    }
+
+    let result = "APPLIED";
+    if (!order) result = "ORDER_NOT_FOUND";
+    else if (amountCents === null || amountCents !== order.totalCents) result = "AMOUNT_MISMATCH";
+    else if (!transition) result = "IGNORED_STATUS";
+    else if (!shouldApplyPaymentTransition(
+      order.paymentStatus as InternalPaymentStatus,
+      transition.paymentStatus,
+      order.mercadoPagoPaymentId === paymentId,
+    )) result = "IGNORED_STALE";
+    else {
+      await transaction.order.update({
+        where: { id: order.id },
+        data: {
+          status: transition.orderStatus,
+          paymentStatus: transition.paymentStatus,
+          mercadoPagoPaymentId: paymentId,
+        },
+      });
+    }
+
+    await transaction.paymentEvent.update({
+      where: { id: event.id },
+      data: {
+        orderId: order?.id ?? null,
+        result,
+        processedAt: new Date(),
+      },
+    });
+
+    return { result, orderId: order?.id ?? null, providerStatus };
+  });
+}

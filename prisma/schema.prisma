@@ -170,12 +170,31 @@ model Order {
   mercadoPagoPaymentId     String?
   notes                    String?
   items                    OrderItem[]
+  paymentEvents            PaymentEvent[]
   createdAt                DateTime          @default(now())
   updatedAt                DateTime          @updatedAt
 
   @@index([storeId, status])
   @@index([customerId])
   @@index([mercadoPagoPaymentId])
+}
+
+model PaymentEvent {
+  id              String   @id @default(cuid())
+  orderId         String?
+  order           Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  eventKey         String   @unique
+  provider         String
+  providerEventId  String
+  providerStatus   String
+  eventType        String
+  result           String
+  requestId        String?
+  processedAt      DateTime?
+  createdAt        DateTime @default(now())
+
+  @@index([orderId])
+  @@index([provider, providerEventId])
 }
 
 model OrderItem {

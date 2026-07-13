@@ -290,6 +290,17 @@ svg { display: block; }
 .order-receipt { position: relative; top: auto; }
 .receipt-status { display: flex; align-items: center; gap: .5rem; margin: 1rem 0 0; border-radius: 999px; padding: .65rem .8rem; background: var(--store-brand-soft); color: var(--store-brand); font-size: .67rem; font-weight: 850; }
 .receipt-status span { width: .5rem; aspect-ratio: 1; border-radius: 50%; background: var(--store-accent); }
+.payment-notice { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .85rem; max-width: 46rem; margin: 1.5rem 0 2rem; border: 1px solid var(--store-line); border-radius: 1rem; padding: 1rem; background: var(--store-surface); }
+.payment-notice > span { display: grid; width: 2.7rem; aspect-ratio: 1; place-items: center; border-radius: 50%; background: var(--store-brand-soft); color: var(--store-brand); }
+.payment-notice strong { display: block; font-family: Georgia, serif; font-size: 1rem; }
+.payment-notice p { margin: .25rem 0 0; color: var(--store-muted); font-size: .7rem; line-height: 1.5; }
+.payment-notice button { min-height: 2.75rem; border: 0; border-radius: 999px; padding: 0 1rem; background: var(--store-ink); color: white; cursor: pointer; font: inherit; font-size: .68rem; font-weight: 850; }
+.payment-notice button:disabled { cursor: wait; opacity: .6; }
+.payment-notice.paid { border-color: #97c8a5; background: #f1faf3; }
+.payment-notice.paid > span { background: #d7f0dd; color: #25683a; }
+.payment-notice.failed { border-color: #d7a59d; background: #fff7f5; }
+.payment-notice.refunded { border-color: #c4b4d9; background: #faf7ff; }
+.payment-notice .payment-error { grid-column: 2 / -1; margin: 0; color: #8b332d; font-weight: 750; }
 
 a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid color-mix(in srgb, var(--store-accent) 70%, white); outline-offset: 3px; }
 @keyframes reveal-up { from { opacity: 0; transform: translateY(1.2rem); } to { opacity: 1; transform: translateY(0); } }
@@ -357,6 +368,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .field.full, .field.wide { grid-column: auto; }
   .field.short { max-width: none; }
   .success-actions { align-items: stretch; flex-direction: column; }
+  .payment-notice { grid-template-columns: auto minmax(0, 1fr); }
+  .payment-notice button { grid-column: 1 / -1; }
+  .payment-notice .payment-error { grid-column: 1 / -1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

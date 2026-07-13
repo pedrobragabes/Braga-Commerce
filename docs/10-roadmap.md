@@ -1,16 +1,21 @@
 # Roadmap
 
-| Milestone | Resultado |
-| --- | --- |
-| 0. Setup e documentação | Projeto roda, banco conecta, seed e docs existem. |
-| 1. Banco e domínio | Schema, migrations, seed e helpers. |
-| 2. Storefront | Navegação, catálogo, categoria e produto. |
-| 3. Carrinho | Persistência local e revalidação. |
-| 4. Checkout | Pedido pendente sem pagamento. |
-| 5. Mercado Pago | Checkout Pro, webhook e sandbox. |
-| 6. Admin | Produtos, categorias, estoque e pedidos. |
-| 7. Upload | Storage e imagens seguras. |
-| 8. Deploy beta | PV Moda online e operação ponta a ponta. |
-| 9. Pós-MVP | Cupom simples, frete CEP, e-mails, relatórios e integrações avaliadas. |
+| Milestone | Resultado | Estado em 13/07/2026 |
+| --- | --- | --- |
+| M0 — Fundação | Supabase, schema, seed e verificações | Concluído |
+| M1 — Storefront público | Home, catálogo, categoria e produto | Concluído |
+| M2 — Carrinho e checkout | Carrinho persistente e pedido pendente | Concluído |
+| M3 — Mercado Pago | Checkout Pro, retorno, webhook e sandbox | Em execução |
+| M4 — Admin MVP | Login do lojista, produtos, estoque e pedidos | Planejado |
+| M5 — Upload e imagens | Storage e imagens seguras | Planejado |
+| M6 — Deploy beta | Domínio, operação e pedido ponta a ponta | Planejado |
+| M7 — Pós-MVP controlado | Melhorias comerciais avaliadas após o beta | Backlog |
 
-Multi-loja experimental, Bling, automação WhatsApp, temas e qualquer SaaS só são avaliados depois de venda real do piloto.
+## Sequência
+
+Cada milestone só começa quando a base necessária está estável. Ideias que não
+pertencem à fase ativa entram no M7 sem interromper a entrega corrente.
+
+Multi-loja automático, Bling, automação de WhatsApp, tema editável, animações e
+polimento visual profundo são avaliados depois do fluxo comercial completo do
+piloto. A issue de tema não cria um page builder.
