@@ -25,6 +25,11 @@ npm run db:migrate:deploy
 npm run db:seed
 ```
 
+Se o banco foi criado pela integraÃ§Ã£o do Vercel, ela fornece
+`DATABASE_POSTGRES_PRISMA_URL`. O Prisma e o seed reconhecem esse nome; copie
+o snippet `.env.local` exibido pela integraÃ§Ã£o para o seu `.env` local (sem
+versionÃ¡-lo) e use os mesmos comandos.
+
 `migrate dev` é o fluxo local de criação de migrations; `migrate deploy` aplica migrations versionadas em staging ou produção.
 
 ## Situação da migration inicial

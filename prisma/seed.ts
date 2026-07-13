@@ -3,10 +3,13 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 import { PV_MODA_CATEGORIES, PV_MODA_PRODUCTS, validatePvModaSeed } from "./seed-data";
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString =
+  process.env.DATABASE_URL ?? process.env.DATABASE_POSTGRES_PRISMA_URL;
 
 if (!connectionString) {
-  throw new Error("DATABASE_URL deve ser configurada antes de executar o seed.");
+  throw new Error(
+    "DATABASE_URL ou DATABASE_POSTGRES_PRISMA_URL deve ser configurada antes de executar o seed.",
+  );
 }
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
