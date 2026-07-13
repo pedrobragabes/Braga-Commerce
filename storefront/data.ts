@@ -145,3 +145,23 @@ export const getProductBySlug = cache(async (storeSlug: string, productSlug: str
 
   return product ? mapProduct(product) : null;
 });
+
+export const getPublicOrder = cache(async (storeSlug: string, orderId: string) => {
+  return getDatabase().order.findFirst({
+    where: { id: orderId, store: { slug: storeSlug } },
+    select: {
+      id: true,
+      status: true,
+      paymentStatus: true,
+      deliveryMethod: true,
+      subtotalCents: true,
+      shippingCents: true,
+      totalCents: true,
+      createdAt: true,
+      items: {
+        orderBy: { id: "asc" },
+        select: { id: true, productName: true, variantName: true, quantity: true, totalCents: true },
+      },
+    },
+  });
+});

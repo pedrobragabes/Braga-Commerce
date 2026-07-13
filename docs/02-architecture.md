@@ -35,6 +35,16 @@ Mercado Pago -> webhook HTTP POST -> Next.js API -> Prisma -> pedido atualizado
 Admin -> Next.js /admin -> ações autorizadas -> Prisma/Storage
 ```
 
+## Autenticação
+
+O checkout público do M2 funciona como convidado: nome, telefone, e-mail
+opcional e endereço são snapshots do pedido, sem senha ou conta obrigatória.
+Isso reduz atrito e mantém `Customer` preparado para uma associação futura.
+
+O login do lojista entra no M4 para proteger produtos, estoque e pedidos. Uma
+conta opcional de consumidor, com histórico de compras, permanece no M7 e pode
+vincular pedidos anteriores por um processo verificado de e-mail ou telefone.
+
 ## Responsabilidades
 
 `app` compõe páginas e rotas; `storefront/components` contém a UI pública;

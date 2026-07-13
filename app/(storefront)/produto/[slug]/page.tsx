@@ -51,6 +51,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
             <VariationPicker
               basePriceCents={product.basePriceCents}
+              productId={product.id}
               productName={product.name}
               variants={product.variants}
               whatsapp={navigation.store.whatsapp}

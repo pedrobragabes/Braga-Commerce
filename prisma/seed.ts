@@ -28,6 +28,11 @@ async function main() {
 
   const storeName = process.env.SEED_STORE_NAME ?? "PV Moda Masculina";
   const storeSlug = process.env.SEED_STORE_SLUG ?? "pv-moda-masculina";
+  const localDeliveryFeeCents = Number(process.env.SEED_LOCAL_DELIVERY_FEE_CENTS ?? 0);
+
+  if (!Number.isInteger(localDeliveryFeeCents) || localDeliveryFeeCents < 0) {
+    throw new Error("SEED_LOCAL_DELIVERY_FEE_CENTS deve ser um inteiro não negativo.");
+  }
 
   const store = await prisma.store.upsert({
     where: { slug: storeSlug },
@@ -37,6 +42,21 @@ async function main() {
       slug: storeSlug,
       whatsapp: process.env.SEED_STORE_WHATSAPP || null,
       settings: { create: {} },
+    },
+  });
+
+  await prisma.storeSettings.upsert({
+    where: { storeId: store.id },
+    update: {
+      allowLocalPickup: true,
+      allowLocalDelivery: process.env.SEED_ALLOW_LOCAL_DELIVERY !== "false",
+      localDeliveryFeeCents,
+    },
+    create: {
+      storeId: store.id,
+      allowLocalPickup: true,
+      allowLocalDelivery: process.env.SEED_ALLOW_LOCAL_DELIVERY !== "false",
+      localDeliveryFeeCents,
     },
   });
 

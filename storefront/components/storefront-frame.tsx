@@ -1,5 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
+import { CartProvider } from "../cart/cart-context";
+import { CartLink } from "../cart/cart-link";
 import { normalizeWhatsapp } from "../format";
 import type { StorefrontCategory, StorefrontConfig, StorefrontStore } from "../types";
 import { StoreIcon } from "./icons";
@@ -52,10 +54,13 @@ function StoreHeader({
           <input aria-label="Pesquisar produtos" name="q" placeholder="Pesquisar camisetas, camisas, calças..." type="search" />
           <button type="submit">Buscar</button>
         </form>
-        <a className="service-link" href="#contato">
-          <StoreIcon name="user" />
-          <span><small>Precisa de ajuda?</small><strong>Fale com a loja</strong></span>
-        </a>
+        <div className="header-actions">
+          <a className="service-link" href="#contato">
+            <StoreIcon name="user" />
+            <span><small>Precisa de ajuda?</small><strong>Fale com a loja</strong></span>
+          </a>
+          <CartLink />
+        </div>
       </div>
       <nav aria-label="Navegação principal" className="category-nav">
         <div className="store-container nav-inner">
@@ -124,10 +129,12 @@ export function StorefrontFrame({
   children: ReactNode;
 }) {
   return (
-    <div className="storefront" style={themeVariables(config)}>
-      <StoreHeader categories={categories} config={config} store={store} />
-      <main>{children}</main>
-      <StoreFooter store={store} />
-    </div>
+    <CartProvider storeSlug={store.slug}>
+      <div className="storefront" style={themeVariables(config)}>
+        <StoreHeader categories={categories} config={config} store={store} />
+        <main>{children}</main>
+        <StoreFooter store={store} />
+      </div>
+    </CartProvider>
   );
 }
