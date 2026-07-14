@@ -16,6 +16,11 @@ Os bloqueios manuais permanecem nas issues obrigatórias do M6. A issue operacio
 do M7 é um espelho consolidado para o responsável pela loja e não substitui os
 critérios de aceite.
 
+Enquanto esses bloqueios existirem, Production usa um gate temporário de senha.
+`SITE_ACCESS_PASSWORD` e `SITE_ACCESS_SECRET` ficam apenas na Vercel; health,
+`robots.txt` e o webhook do Mercado Pago permanecem públicos. Remover o gate no
+go-live exige apagar as duas variáveis e fazer um novo deploy.
+
 ## Ambientes
 
 O projeto Vercel `errinhopogs-projects/braga-commerce` está ligado ao repositório.

@@ -1,0 +1,21 @@
+# M7 — Pós-MVP controlado
+
+## Ordem por dependência
+
+| Ordem | Issue | Estado inicial | Dependência |
+| --- | --- | --- | --- |
+| 0 | #55 Proteção temporária do beta | Em execução | Nenhuma; segurança antes das demais mudanças |
+| 1 | #45 Avaliar Melhor Envio | Próxima | Pesquisa antes de implementar frete |
+| 2 | #44 Frete por CEP | Pendente | Decisão da #45 |
+| 3 | #48 Relatório de vendas | Pendente | Admin e pedidos persistidos já disponíveis |
+| 4 | #49 Exportação CSV | Pendente | Filtros e autorização do relatório |
+| 5 | #50 Tema configurável | Pendente | Limites antes do polimento visual |
+| 6 | #53 Direção visual e motion | Pendente | Direção aprovada e limites da #50 |
+| 7 | #47 Troca e privacidade | Pendente | Texto precisa de revisão do responsável |
+| 8 | #46 E-mails transacionais | Bloqueada | Eventos reais de pedido/pagamento estáveis |
+| 9 | #43 Cupom simples | Bloqueada | Pagamento real estável, conforme a própria issue |
+| 10 | #51 Multi-loja e integrações | Futuro | Validação comercial do piloto |
+| — | #54 Checklist manual | Acompanhamento | Domínio, backup e Mercado Pago do M6 |
+
+Uma issue só avança quando sua dependência está comprovada. O M7 não autoriza
+fechar os bloqueios obrigatórios de go-live do M6.

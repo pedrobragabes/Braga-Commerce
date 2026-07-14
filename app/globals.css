@@ -34,6 +34,14 @@ svg { display: block; }
 .not-found-card > p:not(.section-eyebrow) { max-width: 34rem; color: var(--store-muted); line-height: 1.7; }
 .not-found-card > div { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2rem; }
 
+.beta-access-page { display: grid; min-height: 100svh; place-items: center; padding: 1.25rem; background: var(--store-brand); }
+.beta-access-card { width: min(100%, 34rem); border-radius: calc(var(--store-radius) * 1.35); padding: clamp(1.5rem, 6vw, 3.5rem); background: var(--store-paper); box-shadow: .8rem .8rem 0 var(--store-accent); }
+.beta-access-mark { display: grid; width: 4.5rem; aspect-ratio: 1; place-items: center; margin-bottom: 1.5rem; border-radius: 50% 50% 50% 12%; background: var(--store-brand); color: white; font-family: Georgia, serif; font-size: 1.2rem; font-weight: 800; }
+.beta-access-card h1 { max-width: 10ch; margin: 0 0 1rem; font-family: "Iowan Old Style", Georgia, serif; font-size: clamp(2.6rem, 8vw, 4.5rem); font-weight: 500; letter-spacing: -.055em; line-height: .9; }
+.beta-access-card > p:not(.section-eyebrow) { margin-bottom: 1.5rem; color: var(--store-muted); line-height: 1.65; }
+.beta-access-card form { display: grid; gap: 1rem; }
+.beta-access-card > small { display: block; margin-top: 1.25rem; color: var(--store-muted); font-size: .68rem; line-height: 1.5; text-align: center; }
+
 .storefront { min-height: 100svh; background: var(--store-paper); overflow: clip; }
 .store-container { width: min(100% - 2.5rem, 75rem); margin-inline: auto; }
 .store-header { position: relative; z-index: 20; background: var(--store-surface); border-bottom: 1px solid var(--store-line); }
