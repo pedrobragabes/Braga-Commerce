@@ -4,9 +4,9 @@
 
 | Ordem | Issue | Estado inicial | Dependência |
 | --- | --- | --- | --- |
-| 0 | #55 Proteção temporária do beta | Em execução | Nenhuma; segurança antes das demais mudanças |
-| 1 | #45 Avaliar Melhor Envio | Próxima | Pesquisa antes de implementar frete |
-| 2 | #44 Frete por CEP | Pendente | Decisão da #45 |
+| 0 | #55 Proteção temporária do beta | Concluída | Nenhuma; segurança antes das demais mudanças |
+| 1 | #45 Avaliar Melhor Envio | Concluída | Pesquisa antes de implementar frete |
+| 2 | #44 Frete por CEP | Próxima | Credenciais Sandbox e dados de origem/produto |
 | 3 | #48 Relatório de vendas | Pendente | Admin e pedidos persistidos já disponíveis |
 | 4 | #49 Exportação CSV | Pendente | Filtros e autorização do relatório |
 | 5 | #50 Tema configurável | Pendente | Limites antes do polimento visual |
