@@ -27,6 +27,7 @@ model Store {
   products   Product[]
   orders     Order[]
   settings   StoreSettings?
+  emailOutbox EmailOutbox[]
 }
 
 model StoreSettings {
@@ -179,12 +180,31 @@ model Order {
   internalNote             String?
   items                    OrderItem[]
   paymentEvents            PaymentEvent[]
+  emailOutbox              EmailOutbox[]
+  inventoryStatus          InventoryStatus   @default(NOT_RESERVED)
+  reservedAt               DateTime?
+  expiresAt                DateTime?
+  stockCommittedAt         DateTime?
+  stockReleasedAt          DateTime?
+  paidAt                   DateTime?
+  cancelledAt              DateTime?
+  refundedAt               DateTime?
   createdAt                DateTime          @default(now())
   updatedAt                DateTime          @updatedAt
 
   @@index([storeId, status])
   @@index([customerId])
   @@index([mercadoPagoPaymentId])
+  @@index([inventoryStatus, expiresAt])
+  @@index([storeId, paidAt])
+}
+
+enum InventoryStatus {
+  NOT_RESERVED
+  RESERVED
+  COMMITTED
+  RELEASED
+  REQUIRES_REVIEW
 }
 
 model PaymentEvent {
@@ -219,6 +239,50 @@ model OrderItem {
   quantity       Int
   unitPriceCents Int
   totalCents     Int
+}
+
+model RateLimitBucket {
+  key         String   @id
+  count       Int      @default(1)
+  windowStart DateTime
+  expiresAt   DateTime
+  updatedAt   DateTime @updatedAt
+
+  @@index([expiresAt])
+}
+
+model EmailOutbox {
+  id            String         @id @default(cuid())
+  storeId       String
+  store         Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  orderId       String
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  eventKey      String         @unique
+  type          EmailType
+  status        EmailStatus    @default(PENDING)
+  attempts      Int            @default(0)
+  nextAttemptAt DateTime       @default(now())
+  sentAt        DateTime?
+  lastErrorCode String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([status, nextAttemptAt])
+  @@index([orderId])
+}
+
+enum EmailType {
+  ORDER_CREATED
+  PAYMENT_CONFIRMED
+  ORDER_CANCELLED
+  PAYMENT_REFUNDED
+}
+
+enum EmailStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
 }
 
 enum OrderStatus {

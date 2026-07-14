@@ -12,6 +12,7 @@ const betaPublicPaths = [
   "/api/health",
   "/api/webhooks/mercadopago",
   "/api/beta-access",
+  "/api/jobs",
 ];
 
 function isBetaPublicPath(pathname: string) {

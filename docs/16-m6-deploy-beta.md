@@ -11,6 +11,10 @@
 | #40 Observabilidade | Logs estruturados sem PII, `/api/health` e monitor externo no GitHub Actions | Ativar notificações de falha do Actions para o responsável pela operação |
 | #41 Backup | Exportação diária criptografada e retenção de 30 dias preparadas | Cadastrar secrets, executar o workflow e comprovar restauração em banco descartável |
 | #42 Pedido ponta a ponta | Fluxo técnico implementado desde M3 | Fornecer credenciais sandbox, registrar webhook e concluir um pagamento real de teste |
+| #56 Reserva de estoque | Baixa atômica de produto simples/variação e estado de revisão para pagamento tardio | Nenhuma após smoke de produção |
+| #57 Expiração | Reserva por 30 minutos e GitHub Actions autenticado a cada 10 minutos | Manter Actions habilitado no repositório |
+| #58 Rate limiting | Buckets persistentes por HMAC nas APIs públicas | Nenhuma após smoke de produção |
+| #59 Datas comerciais | `paidAt`, `cancelledAt`, `refundedAt` e relatório por confirmação | Nenhuma após smoke de produção |
 
 Os bloqueios manuais permanecem nas issues obrigatórias do M6. A issue operacional
 do M7 é um espelho consolidado para o responsável pela loja e não substitui os
@@ -95,3 +99,24 @@ própria, pois o backup do banco contém apenas metadados dos objetos.
 Rollback: reverter a release pela Vercel. Banco só volta por migration corretiva
 ou backup validado; nunca editar manualmente tabelas de pedido/pagamento para
 simular sucesso.
+
+## Pós — ações manuais do responsável
+
+Estas ações não devem ser simuladas pelo desenvolvimento e permanecem abertas até
+existir evidência real:
+
+1. Comprar/definir o domínio, apontar o DNS para a Vercel, atualizar
+   `NEXT_PUBLIC_APP_URL` e validar HTTPS, canonical e webhook no domínio final (#38).
+2. Guardar `DATABASE_BACKUP_URL` e `BACKUP_ENCRYPTION_PASSPHRASE` nos secrets do
+   GitHub, executar o backup e restaurá-lo em banco descartável (#41).
+3. Fornecer as credenciais Sandbox do Mercado Pago, registrar o webhook e executar
+   aprovação, rejeição, repetição do webhook e pagamento após abandono (#15, #19 e #42).
+4. Revisar e aprovar o texto de `/trocas` e `/privacidade`, confirmando canais,
+   prazos e fornecedores citados antes de fechar #47.
+5. Escolher domínio/remetente e provedor de e-mail. Para o driver preparado,
+   configurar `EMAIL_DRIVER=resend`, `EMAIL_FROM` verificado e `RESEND_API_KEY` na
+   Vercel; então testar criação, pagamento, cancelamento e reembolso antes de fechar #46.
+6. Ativar notificações de falha dos workflows de disponibilidade, expiração e
+   backup para uma pessoa responsável pela operação.
+7. No go-live, remover `SITE_ACCESS_PASSWORD` e `SITE_ACCESS_SECRET`, publicar de
+   novo e só então divulgar a loja. Até lá, o beta continua protegido por senha.

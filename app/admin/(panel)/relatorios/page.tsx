@@ -3,6 +3,7 @@ import { requireAdminSession } from "../../../../lib/admin-auth";
 import { getDatabase } from "../../../../lib/database";
 import {
   calculateAverageTicket,
+  buildPaidPeriodFilter,
   resolveSalesPeriod,
   salesPeriodOptions,
 } from "../../../../lib/sales-report";
@@ -20,9 +21,7 @@ export default async function AdminSalesReportPage({
   const where = {
     storeId: session.storeId,
     paymentStatus: "PAID" as const,
-    ...(selectedPeriod.since
-      ? { createdAt: { gte: selectedPeriod.since, lte: selectedPeriod.until } }
-      : {}),
+    ...buildPaidPeriodFilter(selectedPeriod.since, selectedPeriod.until),
   };
   const database = getDatabase();
   const [aggregate, paidOrders] = await Promise.all([
@@ -33,7 +32,7 @@ export default async function AdminSalesReportPage({
     }),
     database.order.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }],
       take: 100,
       select: {
         id: true,
@@ -41,6 +40,7 @@ export default async function AdminSalesReportPage({
         shippingCents: true,
         deliveryMethod: true,
         createdAt: true,
+        paidAt: true,
       },
     }),
   ]);
@@ -74,9 +74,7 @@ export default async function AdminSalesReportPage({
         <article><small>Ticket médio</small><strong>{formatCurrency(averageTicketCents)}</strong><span>Receita dividida pelos pedidos pagos</span></article>
         <article><small>Frete cobrado</small><strong>{formatCurrency(shippingCents)}</strong><span>Incluído no total dos pedidos</span></article>
       </section>
-      <div className="admin-alert">
-        O período usa a data de criação do pedido. Uma data própria de confirmação do pagamento será necessária antes de transformar este painel em relatório financeiro.
-      </div>
+      <div className="admin-alert">O período usa a confirmação do pagamento. Pedidos antigos sem essa data continuam usando a criação como compatibilidade.</div>
       <section className="admin-section">
         <div className="admin-section-heading">
           <div><p className="admin-kicker">Composição do período</p><h2>Pedidos confirmados</h2></div>
@@ -89,7 +87,7 @@ export default async function AdminSalesReportPage({
               <tbody>{paidOrders.map((order) => (
                 <tr key={order.id}>
                   <td><Link href={`/admin/pedidos/${order.id}`}><strong>#{order.id.slice(-7).toUpperCase()}</strong><small>Pagamento confirmado</small></Link></td>
-                  <td>{order.createdAt.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" })}</td>
+                  <td>{(order.paidAt ?? order.createdAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" })}</td>
                   <td>{order.deliveryMethod === "LOCAL_PICKUP" ? "Retirada" : order.deliveryMethod === "LOCAL_DELIVERY" ? "Entrega local" : "Transportadora"}</td>
                   <td>{formatCurrency(order.shippingCents)}</td>
                   <td><strong>{formatCurrency(order.totalCents)}</strong></td>

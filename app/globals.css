@@ -43,7 +43,7 @@ svg { display: block; }
 .beta-access-card > small { display: block; margin-top: 1.25rem; color: var(--store-muted); font-size: .68rem; line-height: 1.5; text-align: center; }
 
 .storefront { min-height: 100svh; background: var(--store-paper); overflow: clip; }
-.store-container { width: min(100% - 2.5rem, 75rem); margin-inline: auto; }
+.store-container { width: min(calc(100% - 2.5rem), 75rem); margin-inline: auto; }
 .store-header { position: relative; z-index: 20; background: var(--store-surface); border-bottom: 1px solid var(--store-line); }
 .announcement-bar { background: var(--store-ink); color: var(--store-surface); font-size: .76rem; letter-spacing: .03em; }
 .announcement-inner { min-height: 2.2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
@@ -172,6 +172,14 @@ svg { display: block; }
 .story-grid > div:last-child > p { margin: 0 0 1.4rem; color: var(--store-muted); line-height: 1.7; }
 
 .store-footer { position: relative; padding: 4.5rem 0 1.5rem; background: var(--store-ink); color: var(--store-paper); }
+.legal-page { padding-block: clamp(3rem, 8vw, 6rem); max-width: 54rem; }
+.legal-page header { margin-bottom: 2rem; }
+.legal-page h1 { margin: .4rem 0 .8rem; font-family: Georgia, serif; font-size: clamp(2.4rem, 6vw, 4.8rem); line-height: 1; }
+.legal-page h2 { margin: 0 0 .65rem; font-family: Georgia, serif; font-size: 1.35rem; }
+.legal-page section { padding-block: 1.5rem; border-top: 1px solid var(--store-line); }
+.legal-page p { margin: 0; color: var(--store-muted); line-height: 1.8; }
+.legal-page a { color: var(--store-accent-strong); text-decoration: underline; text-underline-offset: .2em; }
+.legal-draft { margin-bottom: 2rem; padding: 1rem 1.2rem; border-left: .25rem solid var(--store-accent); background: var(--store-surface); color: var(--store-ink); line-height: 1.6; }
 .footer-grid { display: grid; grid-template-columns: 1.35fr repeat(3, 1fr); gap: clamp(2rem, 5vw, 4rem); }
 .footer-grid > div { display: flex; align-items: flex-start; flex-direction: column; gap: .65rem; }
 .footer-grid h2 { margin: .35rem 0 0; font-family: Georgia, serif; font-size: 1.5rem; }
@@ -342,7 +350,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 @media (max-width: 40rem) {
-  .store-container { width: min(100% - 1.25rem, 75rem); }
+  .store-container { width: min(calc(100% - 1.25rem), 75rem); }
   .announcement-inner { min-height: 2.5rem; justify-content: center; text-align: center; }
   .announcement-inner p { font-size: .68rem; line-height: 1.25; }
   .announcement-inner > div { display: none; }

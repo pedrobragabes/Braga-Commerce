@@ -11,8 +11,8 @@
 | 4 | #49 Exportação CSV | Concluída | Filtros e autorização do relatório concluídos na #48 |
 | 5 | #50 Tema configurável | Concluída | Limites antes do polimento visual |
 | 6 | #53 Direção visual e motion | Próxima | Direção aprovada e limites da #50 |
-| 7 | #47 Troca e privacidade | Pendente | Texto precisa de revisão do responsável |
-| 8 | #46 E-mails transacionais | Bloqueada | Eventos reais de pedido/pagamento estáveis |
+| 7 | #47 Troca e privacidade | Rascunho pronto | Texto e canais precisam de revisão do responsável |
+| 8 | #46 E-mails transacionais | Infraestrutura pronta | Domínio/remetente e provedor precisam ser escolhidos |
 | 9 | #43 Cupom simples | Bloqueada | Pagamento real estável, conforme a própria issue |
 | 10 | #51 Multi-loja e integrações | Futuro | Validação comercial do piloto |
 | — | #54 Checklist manual | Acompanhamento | Domínio, backup e Mercado Pago do M6 |

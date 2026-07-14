@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { CartQuoteError } from "../../../lib/cart-quote";
-import { createPendingOrder } from "../../../lib/orders";
+import { createPendingOrder, isInventoryReservationError } from "../../../lib/orders";
 import { logEvent } from "../../../lib/observability/logger";
 import { checkoutRequestSchema } from "../../../storefront/checkout/contracts";
+import { enforceRateLimit, rateLimitPolicies } from "../../../lib/rate-limit";
 
 export async function POST(request: Request) {
+  const limited = await enforceRateLimit(request, rateLimitPolicies.order);
+  if (limited) return limited;
   const result = checkoutRequestSchema.safeParse(await request.json().catch(() => null));
   if (!result.success) {
     return NextResponse.json(
@@ -19,6 +22,12 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof CartQuoteError) {
       return NextResponse.json({ error: { code: error.code, message: error.message } }, { status: error.status });
+    }
+    if (isInventoryReservationError(error)) {
+      return NextResponse.json(
+        { error: { code: "STOCK_CHANGED", message: (error as Error).message } },
+        { status: 409 },
+      );
     }
     logEvent("error", "order.create.failed", {
       errorName: error instanceof Error ? error.name : "UnknownError",

@@ -28,6 +28,8 @@ export async function createOrderPreference(orderId: string) {
       customerName: true,
       customerEmail: true,
       mercadoPagoPreferenceId: true,
+      inventoryStatus: true,
+      expiresAt: true,
       items: { select: { id: true, productName: true, variantName: true, quantity: true, unitPriceCents: true } },
     },
   });
@@ -35,6 +37,9 @@ export async function createOrderPreference(orderId: string) {
   if (!order) throw new MercadoPagoIntegrationError("Pedido não encontrado.", "ORDER_NOT_FOUND", 404);
   if (order.paymentStatus === "PAID" || order.status === "REFUNDED") {
     throw new MercadoPagoIntegrationError("Este pedido não aceita um novo pagamento.", "ORDER_NOT_PAYABLE", 409);
+  }
+  if (order.inventoryStatus !== "RESERVED" || !order.expiresAt || order.expiresAt <= new Date()) {
+    throw new MercadoPagoIntegrationError("A reserva deste pedido expirou.", "ORDER_EXPIRED", 409);
   }
 
   const preferenceClient = new Preference(getMercadoPagoClient());
@@ -77,6 +82,9 @@ export async function createOrderPreference(orderId: string) {
       auto_return: "approved",
       notification_url: `${appUrl}/api/webhooks/mercadopago?source_news=webhooks`,
       statement_descriptor: "PV MODA",
+      expires: true,
+      expiration_date_from: new Date().toISOString(),
+      expiration_date_to: order.expiresAt.toISOString(),
     },
     requestOptions: { idempotencyKey: `preference-${order.id}` },
   });

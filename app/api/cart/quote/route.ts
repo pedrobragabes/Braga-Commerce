@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { CartQuoteError, quoteCart } from "../../../../lib/cart-quote";
 import { logEvent } from "../../../../lib/observability/logger";
 import { quoteRequestSchema } from "../../../../storefront/checkout/contracts";
+import { enforceRateLimit, rateLimitPolicies } from "../../../../lib/rate-limit";
 
 export async function POST(request: Request) {
+  const limited = await enforceRateLimit(request, rateLimitPolicies.quote);
+  if (limited) return limited;
   const result = quoteRequestSchema.safeParse(await request.json().catch(() => null));
   if (!result.success) {
     return NextResponse.json(

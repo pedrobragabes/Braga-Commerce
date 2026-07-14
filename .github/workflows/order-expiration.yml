@@ -1,0 +1,37 @@
+name: Expire pending orders
+
+on:
+  schedule:
+    - cron: "3,13,23,33,43,53 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-order-expiration
+  cancel-in-progress: false
+
+jobs:
+  expire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Release expired reservations
+        env:
+          JOB_SECRET: ${{ secrets.JOB_SECRET }}
+        run: >-
+          curl --fail --silent --show-error
+          --retry 2 --retry-all-errors --max-time 30
+          --request POST
+          --header "Authorization: Bearer ${JOB_SECRET}"
+          https://braga-commerce.vercel.app/api/jobs/orders/expire
+      - name: Process transactional email outbox
+        env:
+          JOB_SECRET: ${{ secrets.JOB_SECRET }}
+        run: >-
+          curl --fail --silent --show-error
+          --retry 2 --retry-all-errors --max-time 30
+          --request POST
+          --header "Authorization: Bearer ${JOB_SECRET}"
+          https://braga-commerce.vercel.app/api/jobs/emails/process

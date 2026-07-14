@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { getDatabase } from "../../../../../lib/database";
 import { pvModaConfig } from "../../../../../storefront/config/pv-moda";
+import { enforceRateLimit, rateLimitPolicies } from "../../../../../lib/rate-limit";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const limited = await enforceRateLimit(request, rateLimitPolicies.orderStatus);
+  if (limited) return limited;
   const { id } = await params;
   const order = await getDatabase().order.findFirst({
     where: { id, store: { slug: pvModaConfig.storeSlug } },

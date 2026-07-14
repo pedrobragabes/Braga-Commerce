@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { can, getAdminSession } from "../../../../../lib/admin-auth";
 import { buildCsv, formatCentsForCsv } from "../../../../../lib/csv";
 import { getDatabase } from "../../../../../lib/database";
-import { resolveSalesPeriod } from "../../../../../lib/sales-report";
+import { buildPaidPeriodFilter, resolveSalesPeriod } from "../../../../../lib/sales-report";
 
 const exportLimit = 5000;
 
@@ -29,15 +29,14 @@ export async function GET(request: Request) {
     where: {
       storeId: session.storeId,
       paymentStatus: "PAID",
-      ...(selectedPeriod.since
-        ? { createdAt: { gte: selectedPeriod.since, lte: selectedPeriod.until } }
-        : {}),
+      ...buildPaidPeriodFilter(selectedPeriod.since, selectedPeriod.until),
     },
     orderBy: { createdAt: "desc" },
     take: exportLimit + 1,
     select: {
       id: true,
       createdAt: true,
+      paidAt: true,
       paymentStatus: true,
       fulfillmentStatus: true,
       deliveryMethod: true,
@@ -61,6 +60,7 @@ export async function GET(request: Request) {
     [
       "pedido",
       "criado_em_utc",
+      "pago_em_utc",
       "pagamento",
       "operacao",
       "entrega",
@@ -73,6 +73,7 @@ export async function GET(request: Request) {
     ...orders.map((order) => [
       order.id,
       order.createdAt.toISOString(),
+      (order.paidAt ?? order.createdAt).toISOString(),
       order.paymentStatus,
       order.fulfillmentStatus,
       deliveryLabels[order.deliveryMethod],

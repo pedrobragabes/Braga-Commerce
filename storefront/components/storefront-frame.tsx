@@ -102,6 +102,8 @@ function StoreFooter({ store }: { store: StorefrontStore }) {
         <div>
           <h3>Compra consciente</h3>
           <p>Confirme tamanho, cor e disponibilidade antes de finalizar seu atendimento.</p>
+          <Link href="/trocas">Trocas e devoluções</Link>
+          <Link href="/privacidade">Privacidade</Link>
         </div>
       </div>
       <div className="store-container footer-bottom">

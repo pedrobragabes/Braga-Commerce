@@ -1,5 +1,10 @@
 import { getDatabase } from "./database";
 import { CartQuoteError, quoteCart } from "./cart-quote";
+import {
+  getOrderExpiration,
+  InventoryReservationError,
+  reserveInventory,
+} from "./inventory";
 import type { CheckoutRequest } from "../storefront/checkout/contracts";
 
 export async function createPendingOrder(payload: CheckoutRequest) {
@@ -10,6 +15,9 @@ export async function createPendingOrder(payload: CheckoutRequest) {
 
   const database = getDatabase();
   return database.$transaction(async (transaction) => {
+    const now = new Date();
+    await reserveInventory(transaction, quote.storeId, quote.items);
+
     const existingCustomer = await transaction.customer.findFirst({
       where: { phone: payload.customer.phone },
       orderBy: { updatedAt: "desc" },
@@ -23,7 +31,7 @@ export async function createPendingOrder(payload: CheckoutRequest) {
           data: { name: payload.customer.name, phone: payload.customer.phone, email: payload.customer.email || null },
         });
 
-    return transaction.order.create({
+    const order = await transaction.order.create({
       data: {
         storeId: quote.storeId,
         customerId: customer.id,
@@ -42,6 +50,9 @@ export async function createPendingOrder(payload: CheckoutRequest) {
         shippingCity: payload.deliveryMethod === "LOCAL_DELIVERY" ? payload.address?.city : null,
         shippingState: payload.deliveryMethod === "LOCAL_DELIVERY" ? payload.address?.state?.toUpperCase() : null,
         notes: payload.notes || null,
+        inventoryStatus: "RESERVED",
+        reservedAt: now,
+        expiresAt: getOrderExpiration(now),
         items: {
           create: quote.items.map((item) => ({
             productId: item.productId,
@@ -55,7 +66,24 @@ export async function createPendingOrder(payload: CheckoutRequest) {
           })),
         },
       },
-      select: { id: true, status: true, totalCents: true, createdAt: true },
+      select: { id: true, storeId: true, status: true, totalCents: true, createdAt: true, expiresAt: true },
     });
+
+    if (payload.customer.email) {
+      await transaction.emailOutbox.create({
+        data: {
+          storeId: order.storeId,
+          orderId: order.id,
+          eventKey: `order:${order.id}:created`,
+          type: "ORDER_CREATED",
+        },
+      });
+    }
+
+    return order;
   });
+}
+
+export function isInventoryReservationError(error: unknown) {
+  return error instanceof InventoryReservationError;
 }

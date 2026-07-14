@@ -5,8 +5,11 @@ import {
   getBetaAccessConfig,
   verifyBetaPassword,
 } from "../../../lib/beta-access";
+import { enforceRateLimit, rateLimitPolicies } from "../../../lib/rate-limit";
 
 export async function POST(request: Request) {
+  const limited = await enforceRateLimit(request, rateLimitPolicies.betaPassword);
+  if (limited) return limited;
   let config: ReturnType<typeof getBetaAccessConfig>;
   try {
     config = getBetaAccessConfig();

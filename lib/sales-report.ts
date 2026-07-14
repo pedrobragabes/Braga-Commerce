@@ -21,3 +21,13 @@ export function resolveSalesPeriod(value: string | undefined, now = new Date()) 
 export function calculateAverageTicket(totalCents: number, orderCount: number) {
   return orderCount > 0 ? Math.round(totalCents / orderCount) : 0;
 }
+
+export function buildPaidPeriodFilter(since: Date | null, until: Date) {
+  if (!since) return {};
+  return {
+    OR: [
+      { paidAt: { gte: since, lte: until } },
+      { paidAt: null, createdAt: { gte: since, lte: until } },
+    ],
+  };
+}
