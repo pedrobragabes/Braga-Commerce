@@ -48,7 +48,7 @@ banco de produção por esse script.
 
 Evidências dos ambientes:
 
-- 5 migrations aplicadas e `prisma migrate status` atualizado em Production,
+- 6 migrations aplicadas e `prisma migrate status` atualizado em Production,
   Preview e Development;
 - seed da PV Moda aplicado;
 - bucket `product-images` com leitura pública e escrita anônima bloqueada;
