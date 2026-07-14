@@ -28,3 +28,9 @@ preferência, retorno e `PaymentEvent` no banco.
 - Integração: operador temporário no Supabase Auth vinculado a uma loja, login,
   isolamento por `storeId` e CRUD com limpeza posterior.
 - Visual: dashboard, tabela, formulários e pedido em desktop/mobile.
+- Produção: smoke autenticado com os três papéis, duas lojas, produto simples e
+  com variação, categoria, pedido, configurações e limpeza comprovada.
+
+O fixture pode ser repetido com `admin:smoke:setup`, `admin:smoke:verify` e
+`admin:smoke:cleanup`. Identidades e senha são fornecidas somente por variáveis
+locais e nunca são impressas pelo script.

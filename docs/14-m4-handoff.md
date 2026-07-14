@@ -1,10 +1,10 @@
-# Handoff — M4 Admin MVP em validação
+# Handoff — M4 Admin MVP concluído
 
 Atualizado em: 14/07/2026
 
-Este checkpoint existe porque o trabalho foi interrompido durante o smoke test
-visual. **Não recomeçar do zero.** O código está compilando e a migration já foi
-aplicada no Supabase.
+O Admin MVP foi validado no ambiente de produção e está pronto para operação.
+A migration foi aplicada no Supabase e os dados técnicos usados no smoke test
+foram removidos do Auth e do banco.
 
 ## Implementado
 
@@ -21,6 +21,8 @@ aplicada no Supabase.
 - Fulfillment com transições protegidas e nota interna separada.
 - Configurações de contato, endereço, retirada, entrega e cores.
 - Scripts `admin:bootstrap` e `admin:remove`.
+- Fixture reproduzível `admin:smoke:setup`, `admin:smoke:verify` e
+  `admin:smoke:cleanup`, sem dados sensíveis nos logs.
 - Documentação do admin em `docs/13-admin-mvp.md`.
 
 ## Correções do checkpoint de 14/07
@@ -34,7 +36,7 @@ aplicada no Supabase.
 - `npm install` gera o Prisma Client, tornando o handoff reproduzível em checkout
   limpo.
 
-## Validado neste checkpoint
+## Evidência final de 14/07/2026
 
 - Migration `20260713163000_add_admin_fields` aplicada no Supabase.
 - `npm run typecheck` aprovado.
@@ -49,27 +51,24 @@ aplicada no Supabase.
   usa dados reais, `/admin` redireciona para `/admin/login` e credenciais
   inválidas exibem erro acessível sem criar sessão.
 - Login revisado em 1440 × 900 e 390 × 844 sem overflow horizontal.
-
-## Ainda não validado — não fechar M4 ainda
-
-1. Completar login válido pelo formulário e confirmar cookie/redirecionamento.
-2. Exercitar criação/edição de produto, categoria, variação e estoque pelo navegador.
-3. Exercitar atualização de fulfillment e comprovar que `paymentStatus` não muda.
-4. Testar STAFF sem acesso a configurações/criação de catálogo.
-5. Fazer teste explícito de isolamento com uma segunda loja temporária.
-6. Revisar dashboard, tabelas e formulários em desktop e celular.
-7. Publicar este checkpoint e validar o novo deploy da Vercel.
-8. Só então comentar e fechar as issues #20–#29 que tiverem todos os critérios
-   comprovados.
-
-## Bloqueio externo atual
-
-Este computador não possui `.env` nem sessão do Vercel CLI. Para executar os
-itens autenticados, configure localmente as variáveis do Supabase/Vercel ou faça
-login no Vercel CLI e puxe o ambiente do projeto. A credencial necessária é a
-service role do Supabase, além da URL/chave pública e `DATABASE_URL`; nenhuma
-delas deve ser enviada em issue, commit, log ou chat. Até isso ocorrer, as issues
-do M4 permanecem abertas.
+- Login válido criou sessão SSR e redirecionou para o dashboard; logout e remoção
+  da identidade invalidaram o acesso.
+- OWNER criou e editou categoria, produto e variação, alterou estoque e confirmou
+  a persistência. Produto inativo deixou de responder na vitrine.
+- O pedido técnico exibiu snapshots, recebeu nota interna e avançou o fulfillment
+  para `PREPARING` sem alterar `paymentStatus=WAITING_PAYMENT`; a nota não apareceu
+  na rota pública do pedido.
+- STAFF não viu configurações, foi redirecionado ao tentar abrir configurações ou
+  criar produto e conseguiu alterar somente o estoque da variação.
+- ADMIN acessou configurações e o formulário de novo produto em produção.
+- Uma segunda loja temporária exibiu catálogo e pedidos vazios, criou produto
+  próprio e alterou identidade visual sem vazar dados para a PV Moda. A sessão da
+  PV recebeu 404 ao tentar abrir o produto da segunda loja.
+- Dashboard, tabelas e formulários foram revisados em desktop e celular. Em 390 px,
+  shell, conteúdo e tabela permaneceram dentro da largura, sem overflow horizontal.
+- Estados de carregamento, vazio, sucesso, bloqueio e 404 foram exercitados.
+- A limpeza confirmou zero operadores, pedidos, produtos, categorias e lojas
+  temporários restantes; a vitrine também não exibiu os registros técnicos.
 
 ## Como retomar em outro computador
 
@@ -83,9 +82,8 @@ npm run test
 npm run build
 ```
 
-Copie para `.env` o snippet privado da integração Supabase/Vercel. Para criar o
-operador real, defina localmente `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` e
-`ADMIN_ROLE=OWNER`, depois execute:
+Para criar um operador real, defina localmente `ADMIN_EMAIL`, `ADMIN_PASSWORD`,
+`ADMIN_NAME` e `ADMIN_ROLE=OWNER`, depois execute:
 
 ```powershell
 npm run admin:bootstrap
@@ -99,5 +97,4 @@ Não envie a senha ou service role para GitHub, issue, screenshot ou chat.
 O trabalho segue `docs/12-delivery-workflow.md`: auditoria do milestone e issues,
 plano por dependência, separação de autenticação/domínio/UI/persistência,
 validação estática, migration, teste real temporário com limpeza, revisão visual,
-publicação e evidências no GitHub. Como o smoke test não terminou, as issues do
-M4 permanecem abertas deliberadamente.
+publicação e evidências no GitHub.

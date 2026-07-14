@@ -40,6 +40,9 @@ npm run db:migrate
 npm run db:migrate:deploy
 npm run db:studio
 npm run admin:bootstrap
+npm run admin:smoke:setup
+npm run admin:smoke:verify
+npm run admin:smoke:cleanup
 ```
 
 ## Documentação
@@ -50,4 +53,4 @@ evidências e publicação está em [`docs/12-delivery-workflow.md`](docs/12-del
 
 ## Status
 
-Milestones 0, 1 e 2 concluídos. M3 aguarda credenciais sandbox; M4 — Admin MVP em execução.
+Milestones 0, 1, 2 e 4 concluídos. M3 aguarda credenciais sandbox.

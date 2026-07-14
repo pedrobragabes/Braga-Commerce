@@ -1,12 +1,12 @@
 # Roadmap
 
-| Milestone | Resultado | Estado em 13/07/2026 |
+| Milestone | Resultado | Estado em 14/07/2026 |
 | --- | --- | --- |
 | M0 — Fundação | Supabase, schema, seed e verificações | Concluído |
 | M1 — Storefront público | Home, catálogo, categoria e produto | Concluído |
 | M2 — Carrinho e checkout | Carrinho persistente e pedido pendente | Concluído |
 | M3 — Mercado Pago | Checkout Pro, retorno, webhook e sandbox | Em execução |
-| M4 — Admin MVP | Login do lojista, produtos, estoque e pedidos | Em execução |
+| M4 — Admin MVP | Login do lojista, produtos, estoque e pedidos | Concluído |
 | M5 — Upload e imagens | Storage e imagens seguras | Planejado |
 | M6 — Deploy beta | Domínio, operação e pedido ponta a ponta | Planejado |
 | M7 — Pós-MVP controlado | Melhorias comerciais avaliadas após o beta | Backlog |
