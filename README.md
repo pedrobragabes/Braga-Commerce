@@ -12,7 +12,10 @@ Loja virtual low cost para pequenos comércios locais. Projeto piloto: **PV Moda
 
 ## MVP
 
-Catálogo, categorias, variações, estoque simples, carrinho, checkout, pedido, Mercado Pago com webhook, painel administrativo e upload de imagens. Marketplace, multi-tenant completo, ERP, cupons complexos e frete avançado não fazem parte do MVP.
+Catálogo, categorias, variações, reserva atômica de estoque, carrinho, checkout,
+pedido, Mercado Pago com webhook, painel administrativo e upload de imagens.
+Marketplace, multi-tenant completo, ERP, cupons complexos e frete avançado não
+fazem parte do MVP.
 
 ## Rodando localmente
 
@@ -58,4 +61,8 @@ evidências e publicação está em [`docs/12-delivery-workflow.md`](docs/12-del
 
 ## Status
 
-Milestones 0, 1, 2, 4 e 5 concluídos. M3 aguarda credenciais sandbox.
+Milestones 0, 1, 2, 4 e 5 concluídos. O M3 aguarda credenciais Sandbox do
+Mercado Pago. O M6 está publicado em beta e aguarda domínio, restauração de
+backup e pedido ponta a ponta. O M7 mantém melhorias pós-MVP e aprovações
+comerciais abertas. Consulte o checklist em
+[`docs/16-m6-deploy-beta.md`](docs/16-m6-deploy-beta.md).

@@ -46,9 +46,10 @@ O build da Vercel usa `npm run vercel-build`. A migration só roda quando
 `VERCEL_ENV=production`; Preview e desenvolvimento nunca aplicam migrations no
 banco de produção por esse script.
 
-Evidências do ambiente não produtivo:
+Evidências dos ambientes:
 
-- 4 migrations aplicadas e `prisma migrate status` atualizado;
+- 5 migrations aplicadas e `prisma migrate status` atualizado em Production,
+  Preview e Development;
 - seed da PV Moda aplicado;
 - bucket `product-images` com leitura pública e escrita anônima bloqueada;
 - Preview `dpl_BHvRnMQvsanBUTdrExRXB5nMfSM4` com build Ready;
