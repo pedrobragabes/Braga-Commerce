@@ -45,7 +45,7 @@ e testes (`tests/`). Decisões e fluxos estão em
 
 ## Requisitos
 
-- Node.js 20.19 ou superior e npm.
+- Node.js 24 LTS e npm.
 - Docker, caso use o PostgreSQL local incluído.
 - Contas Supabase, Vercel e Mercado Pago apenas para integrações hospedadas.
 

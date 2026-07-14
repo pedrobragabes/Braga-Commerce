@@ -21,7 +21,7 @@
 ## Gate automatizado
 
 O workflow `Quality gate` roda em pull requests e pushes para `main` com Node
-20.19: instalação pelo lockfile, audit de dependências de produção, 52 testes
+24.18: instalação pelo lockfile, audit de dependências de produção, 52 testes
 unitários, lint, typecheck e build. Dependabot verifica npm e GitHub Actions
 semanalmente. Isso não substitui os smokes autenticados e o pagamento Sandbox.
 
