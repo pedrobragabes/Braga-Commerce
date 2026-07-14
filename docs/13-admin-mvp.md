@@ -29,6 +29,7 @@ vínculo Prisma. A senha não é persistida pelo Braga Commerce. Nunca coloque
 | --- | --- | --- | --- |
 | Dashboard e leitura de catálogo/pedidos | Sim | Sim | Sim |
 | Criar/editar produto e categoria | Sim | Sim | Não |
+| Enviar, ordenar e remover imagens | Sim | Sim | Não |
 | Atualizar variação e estoque | Sim | Sim | Sim |
 | Atualizar operação e nota interna | Sim | Sim | Sim |
 | Configurar loja | Sim | Sim | Não |

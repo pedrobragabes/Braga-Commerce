@@ -4,6 +4,7 @@ import { can, requireAdminSession } from "../../../../../lib/admin-auth";
 import { getDatabase } from "../../../../../lib/database";
 import { saveVariant, updateProduct } from "../../../actions";
 import { AdminPageHeader, SavedNotice } from "../../../components/ui";
+import { ProductImageManager } from "../../../components/product-image-manager";
 
 function decimal(cents: number | null) { return cents === null ? "" : (cents / 100).toFixed(2); }
 
@@ -13,7 +14,7 @@ export default async function EditProductPage({ params, searchParams }: { params
   const { saved } = await searchParams;
   const database = getDatabase();
   const [product, categories] = await Promise.all([
-    database.product.findFirst({ where: { id, storeId: session.storeId }, include: { variants: { orderBy: { name: "asc" } } } }),
+    database.product.findFirst({ where: { id, storeId: session.storeId }, include: { images: { orderBy: [{ sortOrder: "asc" }, { id: "asc" }] }, variants: { orderBy: { name: "asc" } } } }),
     database.category.findMany({ where: { storeId: session.storeId }, orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }),
   ]);
   if (!product) notFound();
@@ -46,6 +47,8 @@ export default async function EditProductPage({ params, searchParams }: { params
         </form>
         <aside className="admin-rail-note"><span>Regra / estoque</span><p>{product.hasVariants ? "A disponibilidade pública vem da soma das opções ativas." : "Produto simples usa o estoque informado na ficha e não pede escolha de variação."}</p></aside>
       </section>
+
+      <ProductImageManager canEdit={can(session.role, "images:write")} images={product.images} productId={product.id} productName={product.name} />
 
       <section className="admin-section">
         <div className="admin-section-heading"><div><p className="admin-kicker">Grade e disponibilidade</p><h2>Variações</h2></div><span>{product.variants.length} cadastrada(s)</span></div>

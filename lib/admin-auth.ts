@@ -9,6 +9,7 @@ export type AdminPermission =
   | "dashboard:read"
   | "catalog:read"
   | "catalog:write"
+  | "images:write"
   | "inventory:write"
   | "orders:read"
   | "orders:write"
@@ -16,11 +17,11 @@ export type AdminPermission =
 
 const rolePermissions: Record<UserRole, ReadonlySet<AdminPermission>> = {
   OWNER: new Set([
-    "dashboard:read", "catalog:read", "catalog:write", "inventory:write",
+    "dashboard:read", "catalog:read", "catalog:write", "images:write", "inventory:write",
     "orders:read", "orders:write", "settings:write",
   ]),
   ADMIN: new Set([
-    "dashboard:read", "catalog:read", "catalog:write", "inventory:write",
+    "dashboard:read", "catalog:read", "catalog:write", "images:write", "inventory:write",
     "orders:read", "orders:write", "settings:write",
   ]),
   STAFF: new Set([

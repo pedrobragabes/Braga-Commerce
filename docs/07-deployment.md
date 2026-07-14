@@ -10,7 +10,7 @@ Next.js na Vercel, PostgreSQL/Supabase, Supabase Storage, DNS Cloudflare e Merca
 2. Configurar todas as variáveis da `.env.example` na Vercel.
 3. Executar `prisma migrate deploy` durante o deploy.
 4. Configurar domínio e HTTPS; ajustar `NEXT_PUBLIC_APP_URL`.
-5. Criar bucket e políticas mínimas de storage no Milestone 7.
+5. Executar `npm run storage:setup` e `npm run storage:smoke` para o bucket do M5.
 6. Registrar URL pública do webhook no Mercado Pago e fazer pagamento sandbox/produção controlado.
 7. Ativar backup diário e testar restauração antes do go-live.
 
@@ -18,8 +18,9 @@ Para o admin, configure `NEXT_PUBLIC_SUPABASE_URL`,
 `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY`. A integração da
 Vercel também é reconhecida pelos nomes `DATABASE_SUPABASE_URL`,
 `NEXT_PUBLIC_DATABASE_SUPABASE_PUBLISHABLE_KEY` e
-`DATABASE_SUPABASE_SERVICE_ROLE_KEY`. Use a service role apenas no script
-server-side `npm run admin:bootstrap`.
+`DATABASE_SUPABASE_SERVICE_ROLE_KEY`. Use a service role apenas em código e
+scripts server-side (`admin:bootstrap`, `storage:setup` e a rota autenticada de
+upload).
 
 ## Mercado Pago na Vercel
 

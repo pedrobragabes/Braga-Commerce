@@ -43,7 +43,15 @@ sem alterar o pedido.
 
 ## `POST /api/upload` (Milestone 5)
 
-Exige admin autenticado. Aceita apenas JPG, PNG e WebP dentro do limite definido; retorna `{ url }`. Rejeita SVG, MIME inválido e tamanho excedido com `400`.
+Exige operador autenticado com `images:write`. Recebe `multipart/form-data` com
+`productId`, `file` e `alt` opcional. O servidor valida `storeId`, tamanho máximo
+de 4 MiB, MIME e assinatura binária; gera o caminho do objeto e retorna
+`{ url, image }` somente depois de Storage e banco concluírem.
+
+Erros esperados: `400` para arquivo ausente, vazio, grande, SVG, tipo inválido ou
+MIME forjado; `401` sem sessão; `403` sem role; `404` quando o produto não pertence
+à loja; `502` se o Storage não concluir o upload. Nenhum erro inclui detalhe do
+provedor, caminho privado ou credencial.
 
 ## Mutações administrativas (Milestone 4)
 

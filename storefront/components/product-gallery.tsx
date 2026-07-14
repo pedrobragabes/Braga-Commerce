@@ -42,7 +42,7 @@ export function ProductGallery({
           ))}
         </div>
       ) : null}
-      <p>As ilustrações serão substituídas pelas fotos reais da PV Moda no milestone de upload.</p>
+      <p>{images.length ? "Selecione uma imagem para ampliar os detalhes." : "Fotos reais em preparação pela loja."}</p>
     </div>
   );
 }

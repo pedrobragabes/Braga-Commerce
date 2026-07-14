@@ -10,6 +10,8 @@
   --admin-danger: #9c3d32;
 }
 
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; margin: -1px; padding: 0; border: 0; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+
 .admin-login, .admin-shell { min-height: 100svh; background: var(--admin-paper); color: var(--admin-ink); font-family: "Avenir Next", "Segoe UI", sans-serif; }
 .admin-login { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(26rem, .85fr); }
 .admin-login-story { position: relative; display: flex; min-height: 100svh; justify-content: space-between; flex-direction: column; overflow: hidden; padding: clamp(2rem, 5vw, 5rem); background: var(--admin-ink); color: var(--admin-sheet); }
@@ -176,6 +178,24 @@
 .admin-security-note { display: flex; align-items: center; gap: 1rem; margin-top: 2rem; border: 1px solid #9bb4a0; padding: 1rem; background: #eef4ea; }
 .admin-security-note strong { flex: 0 0 auto; font-family: Georgia, serif; }
 .admin-security-note p { margin: 0; color: var(--admin-muted); font-size: .64rem; line-height: 1.5; }
+.admin-image-list { display: grid; gap: .7rem; margin: 0; padding: 0; list-style: none; }
+.admin-image-list li { display: grid; grid-template-columns: 7rem minmax(0, 1fr) auto; align-items: center; gap: 1rem; border-top: 1px solid var(--admin-line); padding: .8rem 0; }
+.admin-image-preview { width: 7rem; aspect-ratio: 4 / 5; border: 1px solid var(--admin-line); background-color: #e7e1d4; background-position: center; background-size: cover; }
+.admin-image-copy { display: flex; min-width: 0; flex-direction: column; gap: .25rem; }
+.admin-image-copy strong { font-family: Georgia, serif; font-size: .86rem; }
+.admin-image-copy span { overflow: hidden; color: var(--admin-muted); font-size: .62rem; text-overflow: ellipsis; white-space: nowrap; }
+.admin-image-actions { display: flex; align-items: center; gap: .5rem; }
+.admin-image-actions form { display: flex; gap: .3rem; }
+.admin-image-actions button { border: 1px solid var(--admin-line); padding: .48rem .65rem; background: white; color: var(--admin-ink); font-size: .6rem; font-weight: 800; }
+.admin-image-actions button:disabled { cursor: not-allowed; opacity: .35; }
+.admin-image-actions button.danger { border-color: #c9958f; color: var(--admin-danger); }
+.admin-upload-form { display: grid; grid-template-columns: minmax(14rem, 1.2fr) minmax(12rem, 1fr) auto; align-items: end; gap: .8rem; margin-top: 1.2rem; border: 1px dashed var(--admin-line); padding: 1rem; background: #fffdf8; }
+.admin-upload-form label { display: flex; min-width: 0; flex-direction: column; gap: .4rem; }
+.admin-upload-form label span { color: var(--admin-muted); font-size: .58rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+.admin-upload-form input { width: 100%; border: 1px solid var(--admin-line); padding: .72rem; background: white; color: var(--admin-ink); font: inherit; font-size: .68rem; }
+.admin-upload-form small { grid-column: 1 / -1; color: var(--admin-muted); font-size: .58rem; }
+.admin-upload-message { margin: .8rem 0 0; border-left: 3px solid var(--admin-moss); padding: .7rem 1rem; background: #eef4ea; font-size: .65rem; }
+.admin-upload-message.error { border-left-color: var(--admin-danger); background: #f7e9e6; color: var(--admin-danger); }
 
 @media (max-width: 72rem) {
   .admin-shell { grid-template-columns: 13rem minmax(0, 1fr); }
@@ -219,6 +239,11 @@
   .admin-operation-card { position: static; }
   .admin-inline-form.variant, .admin-inline-form.category { grid-template-columns: 1fr 1fr; }
   .admin-inline-form label.grow { min-width: 0; }
+  .admin-image-list li { grid-template-columns: 5.2rem 1fr; }
+  .admin-image-preview { width: 5.2rem; }
+  .admin-image-actions { grid-column: 1 / -1; justify-content: flex-end; }
+  .admin-upload-form { grid-template-columns: 1fr; }
+  .admin-upload-form small { grid-column: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {

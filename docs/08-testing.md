@@ -34,3 +34,12 @@ preferência, retorno e `PaymentEvent` no banco.
 O fixture pode ser repetido com `admin:smoke:setup`, `admin:smoke:verify` e
 `admin:smoke:cleanup`. Identidades e senha são fornecidas somente por variáveis
 locais e nunca são impressas pelo script.
+
+## Evidência do Milestone 5
+
+- Unitário: roles de imagem, bucket seguro, JPG/PNG/WebP, SVG, MIME forjado e
+  limite de 4 MiB.
+- Integração: migration de `storagePath`, bucket idempotente, escrita anônima
+  bloqueada, leitura pública e limpeza do objeto técnico.
+- E2E: upload autenticado, ordem persistida, imagem principal no storefront,
+  remoção de referência/objeto e bloqueio de STAFF.

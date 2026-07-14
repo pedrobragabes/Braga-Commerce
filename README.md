@@ -43,6 +43,8 @@ npm run admin:bootstrap
 npm run admin:smoke:setup
 npm run admin:smoke:verify
 npm run admin:smoke:cleanup
+npm run storage:setup
+npm run storage:smoke
 ```
 
 ## Documentação
@@ -53,4 +55,4 @@ evidências e publicação está em [`docs/12-delivery-workflow.md`](docs/12-del
 
 ## Status
 
-Milestones 0, 1, 2 e 4 concluídos. M3 aguarda credenciais sandbox.
+Milestones 0, 1, 2 e 4 concluídos. M3 aguarda credenciais sandbox; M5 — Upload e imagens em execução.

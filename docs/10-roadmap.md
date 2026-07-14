@@ -7,7 +7,7 @@
 | M2 — Carrinho e checkout | Carrinho persistente e pedido pendente | Concluído |
 | M3 — Mercado Pago | Checkout Pro, retorno, webhook e sandbox | Em execução |
 | M4 — Admin MVP | Login do lojista, produtos, estoque e pedidos | Concluído |
-| M5 — Upload e imagens | Storage e imagens seguras | Planejado |
+| M5 — Upload e imagens | Storage e imagens seguras | Em execução |
 | M6 — Deploy beta | Domínio, operação e pedido ponta a ponta | Planejado |
 | M7 — Pós-MVP controlado | Melhorias comerciais avaliadas após o beta | Backlog |
 
