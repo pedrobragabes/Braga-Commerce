@@ -44,17 +44,11 @@ export function can(role: UserRole, permission: AdminPermission) {
 }
 
 async function resolveOperator(authUser: SupabaseUser): Promise<AdminSession | null> {
-  const email = authUser.email?.trim().toLowerCase();
-  if (!email) return null;
-
   const database = getDatabase();
   const operator = await database.user.findFirst({
     where: {
       isActive: true,
-      OR: [
-        { authUserId: authUser.id },
-        { authUserId: null, email },
-      ],
+      authUserId: authUser.id,
     },
     select: {
       id: true,
@@ -68,12 +62,6 @@ async function resolveOperator(authUser: SupabaseUser): Promise<AdminSession | n
   });
 
   if (!operator?.store.isActive) return null;
-  if (!operator.authUserId) {
-    await database.user.update({
-      where: { id: operator.id },
-      data: { authUserId: authUser.id },
-    });
-  }
 
   return {
     authUserId: authUser.id,

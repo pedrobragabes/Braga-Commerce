@@ -12,7 +12,7 @@ async function main() {
     where: { email },
     select: { id: true, authUserId: true },
   });
-  if (!operator) throw new Error(`Operador ${email} não encontrado.`);
+  if (!operator) throw new Error("Operador administrativo não encontrado.");
 
   if (operator.authUserId) {
     const { url } = getSupabasePublicConfig();
@@ -23,7 +23,7 @@ async function main() {
     if (error) throw new Error(error.message);
   }
   await database.user.delete({ where: { id: operator.id } });
-  console.info(`Operador ${email} removido do Auth e do Prisma.`);
+  console.info("Operador administrativo removido do Auth e do Prisma.");
   await database.$disconnect();
 }
 

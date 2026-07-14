@@ -44,8 +44,27 @@ export function slugifyAdminValue(value: string) {
 }
 
 export function parseAdminMoney(value: string) {
-  const amount = Number(value.replace(",", "."));
+  const normalized = value.trim().replace(",", ".");
+  if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) return null;
+  const amount = Number(normalized);
   if (!Number.isFinite(amount) || amount < 0) return null;
   const cents = Math.round(amount * 100);
   return Number.isSafeInteger(cents) ? cents : null;
+}
+
+export function parseAdminInteger(value: string, minimum = 0) {
+  const normalized = value.trim();
+  if (!/^-?\d+$/.test(normalized)) return null;
+  const parsed = Number(normalized);
+  return Number.isSafeInteger(parsed) && parsed >= minimum ? parsed : null;
+}
+
+export function parseAdminColor(value: string) {
+  const normalized = value.trim().toLowerCase();
+  return /^#[0-9a-f]{6}$/.test(normalized) ? normalized : null;
+}
+
+export function parseAdminState(value: string) {
+  const normalized = value.trim().toUpperCase();
+  return /^[A-Z]{2}$/.test(normalized) ? normalized : null;
 }

@@ -112,6 +112,7 @@
 .admin-empty span { display: grid; width: 3.5rem; aspect-ratio: 1; place-items: center; border-radius: 50%; background: var(--admin-lime); }
 .admin-empty h2 { margin: 1rem 0 .3rem; font-family: Georgia, serif; font-size: 1.6rem; }
 .admin-empty p { margin: 0; color: var(--admin-muted); font-size: .72rem; }
+.admin-empty .admin-button { margin-top: 1.25rem; }
 
 .admin-filter { display: flex; align-items: center; gap: .6rem; margin-bottom: 1.5rem; }
 .admin-filter input { max-width: 25rem; background: var(--admin-sheet); }

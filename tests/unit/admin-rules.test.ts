@@ -3,7 +3,10 @@ import { can } from "../../lib/admin-auth";
 import {
   allowedFulfillmentTargets,
   canTransitionFulfillment,
+  parseAdminColor,
+  parseAdminInteger,
   parseAdminMoney,
+  parseAdminState,
   slugifyAdminValue,
   visibleAdminSections,
 } from "../../lib/admin-rules";
@@ -55,6 +58,16 @@ describe("admin value normalization", () => {
     expect(parseAdminMoney("149,90")).toBe(14990);
     expect(parseAdminMoney("-1")).toBeNull();
     expect(parseAdminMoney("abc")).toBeNull();
+    expect(parseAdminMoney("")).toBeNull();
+    expect(parseAdminMoney("1.234")).toBeNull();
+    expect(parseAdminInteger("12")).toBe(12);
+    expect(parseAdminInteger("1.5")).toBeNull();
+    expect(parseAdminInteger("1item")).toBeNull();
+    expect(parseAdminInteger("-1")).toBeNull();
+    expect(parseAdminColor("#D66A2F")).toBe("#d66a2f");
+    expect(parseAdminColor("red")).toBeNull();
+    expect(parseAdminState("sp")).toBe("SP");
+    expect(parseAdminState("São Paulo")).toBeNull();
   });
 });
 

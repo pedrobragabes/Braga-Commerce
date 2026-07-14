@@ -5,7 +5,14 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { FulfillmentStatus } from "../../generated/prisma/client";
 import { requireAdminAction } from "../../lib/admin-auth";
-import { canTransitionFulfillment, parseAdminMoney, slugifyAdminValue } from "../../lib/admin-rules";
+import {
+  canTransitionFulfillment,
+  parseAdminColor,
+  parseAdminInteger,
+  parseAdminMoney,
+  parseAdminState,
+  slugifyAdminValue,
+} from "../../lib/admin-rules";
 import { getDatabase } from "../../lib/database";
 
 const idSchema = z.string().min(1).max(80);
@@ -35,9 +42,9 @@ export async function createProduct(formData: FormData) {
   const name = requiredText(formData, "name");
   const slug = slugifyAdminValue(String(formData.get("slug") || name));
   const categoryId = optionalFormText(formData, "categoryId", 80);
-  const stockQuantity = Number.parseInt(String(formData.get("stockQuantity") || "0"), 10);
+  const stockQuantity = parseAdminInteger(String(formData.get("stockQuantity") ?? "0"));
   if (!slug) throw new Error("INVALID_SLUG");
-  if (!Number.isInteger(stockQuantity) || stockQuantity < 0) throw new Error("INVALID_STOCK");
+  if (stockQuantity === null) throw new Error("INVALID_STOCK");
 
   const database = getDatabase();
   if (categoryId) {
@@ -73,8 +80,8 @@ export async function updateProduct(formData: FormData) {
   const name = requiredText(formData, "name");
   const slug = slugifyAdminValue(String(formData.get("slug") || name));
   const categoryId = optionalFormText(formData, "categoryId", 80);
-  const stockQuantity = Number.parseInt(String(formData.get("stockQuantity") || "0"), 10);
-  if (!slug || !Number.isInteger(stockQuantity) || stockQuantity < 0) throw new Error("INVALID_PRODUCT");
+  const stockQuantity = parseAdminInteger(String(formData.get("stockQuantity") ?? "0"));
+  if (!slug || stockQuantity === null) throw new Error("INVALID_PRODUCT");
 
   const database = getDatabase();
   if (categoryId) {
@@ -120,8 +127,8 @@ export async function saveVariant(formData: FormData) {
   const variantId = optionalFormText(formData, "variantId", 80);
   const product = await getDatabase().product.findFirst({ where: { id: productId, storeId: session.storeId } });
   if (!product) throw new Error("PRODUCT_NOT_FOUND");
-  const stockQuantity = Number.parseInt(String(formData.get("stockQuantity") ?? ""), 10);
-  if (!Number.isInteger(stockQuantity) || stockQuantity < 0) throw new Error("INVALID_STOCK");
+  const stockQuantity = parseAdminInteger(String(formData.get("stockQuantity") ?? ""));
+  if (stockQuantity === null) throw new Error("INVALID_STOCK");
   const data = {
     name: requiredText(formData, "name", 120),
     sku: optionalFormText(formData, "sku", 80),
@@ -152,8 +159,8 @@ export async function saveCategory(formData: FormData) {
   const categoryId = optionalFormText(formData, "categoryId", 80);
   const name = requiredText(formData, "name", 120);
   const slug = slugifyAdminValue(String(formData.get("slug") || name));
-  const sortOrder = Number.parseInt(String(formData.get("sortOrder") || "0"), 10);
-  if (!slug || !Number.isInteger(sortOrder)) throw new Error("INVALID_CATEGORY");
+  const sortOrder = parseAdminInteger(String(formData.get("sortOrder") ?? "0"));
+  if (!slug || sortOrder === null) throw new Error("INVALID_CATEGORY");
   const data = {
     name,
     slug,
@@ -199,6 +206,20 @@ export async function updateOrderOperation(formData: FormData) {
 export async function updateStoreSettings(formData: FormData) {
   const session = await requireAdminAction("settings:write");
   const localDeliveryFeeCents = money(formData, "localDeliveryFee");
+  const email = optionalFormText(formData, "email", 160);
+  const stateInput = optionalFormText(formData, "state", 2);
+  const primaryColorInput = optionalFormText(formData, "primaryColor", 20);
+  const secondaryColorInput = optionalFormText(formData, "secondaryColor", 20);
+  const state = stateInput ? parseAdminState(stateInput) : null;
+  const primaryColor = primaryColorInput ? parseAdminColor(primaryColorInput) : null;
+  const secondaryColor = secondaryColorInput ? parseAdminColor(secondaryColorInput) : null;
+  const allowLocalPickup = checkbox(formData, "allowLocalPickup");
+  const allowLocalDelivery = checkbox(formData, "allowLocalDelivery");
+  if (email && !z.string().email().safeParse(email).success) throw new Error("INVALID_EMAIL");
+  if (stateInput && !state) throw new Error("INVALID_STATE");
+  if (primaryColorInput && !primaryColor) throw new Error("INVALID_PRIMARY_COLOR");
+  if (secondaryColorInput && !secondaryColor) throw new Error("INVALID_SECONDARY_COLOR");
+  if (!allowLocalPickup && !allowLocalDelivery) throw new Error("DELIVERY_METHOD_REQUIRED");
   const database = getDatabase();
   await database.$transaction([
     database.store.update({
@@ -206,28 +227,28 @@ export async function updateStoreSettings(formData: FormData) {
       data: {
         name: requiredText(formData, "name", 120),
         whatsapp: optionalFormText(formData, "whatsapp", 30),
-        email: optionalFormText(formData, "email", 160),
+        email,
         address: optionalFormText(formData, "address", 240),
         city: optionalFormText(formData, "city", 120),
-        state: optionalFormText(formData, "state", 2)?.toUpperCase() || null,
+        state,
       },
     }),
     database.storeSettings.upsert({
       where: { storeId: session.storeId },
       update: {
-        allowLocalPickup: checkbox(formData, "allowLocalPickup"),
-        allowLocalDelivery: checkbox(formData, "allowLocalDelivery"),
+        allowLocalPickup,
+        allowLocalDelivery,
         localDeliveryFeeCents,
-        primaryColor: optionalFormText(formData, "primaryColor", 20),
-        secondaryColor: optionalFormText(formData, "secondaryColor", 20),
+        primaryColor,
+        secondaryColor,
       },
       create: {
         storeId: session.storeId,
-        allowLocalPickup: checkbox(formData, "allowLocalPickup"),
-        allowLocalDelivery: checkbox(formData, "allowLocalDelivery"),
+        allowLocalPickup,
+        allowLocalDelivery,
         localDeliveryFeeCents,
-        primaryColor: optionalFormText(formData, "primaryColor", 20),
-        secondaryColor: optionalFormText(formData, "secondaryColor", 20),
+        primaryColor,
+        secondaryColor,
       },
     }),
   ]);

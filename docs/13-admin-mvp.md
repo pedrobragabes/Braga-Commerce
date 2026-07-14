@@ -5,7 +5,9 @@
 O painel usa Supabase Auth com e-mail e senha. `proxy.ts` atualiza cookies e
 desvia visitantes sem sessão; as páginas validam a identidade novamente no
 servidor com `auth.getUser()`. A identidade só recebe acesso quando existe um
-`User` ativo no Prisma, vinculado a uma `Store` ativa.
+`User` ativo no Prisma, vinculado pelo `authUserId` exato a uma `Store` ativa.
+Não existe associação automática por e-mail: operadores antigos sem esse vínculo
+devem ser reprovisionados pelo script de bootstrap.
 
 Para provisionar o primeiro operador, configure no `.env` local:
 

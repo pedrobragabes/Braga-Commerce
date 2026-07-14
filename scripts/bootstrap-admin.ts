@@ -39,7 +39,7 @@ async function main() {
       update: { authUserId: data.user.id, storeId: store.id, name, role, isActive: true },
       create: { authUserId: data.user.id, storeId: store.id, name, email, role },
     });
-    console.info(`Operador ${email} criado para ${storeSlug} com role ${role}.`);
+    console.info(`Operador administrativo criado para ${storeSlug} com role ${role}.`);
   } catch (error) {
     await supabase.auth.admin.deleteUser(data.user.id);
     throw error;
