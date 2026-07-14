@@ -25,10 +25,19 @@ npm run db:migrate:deploy
 npm run db:seed
 ```
 
-Se o banco foi criado pela integraÃ§Ã£o do Vercel, ela fornece
-`DATABASE_POSTGRES_PRISMA_URL`. O Prisma e o seed reconhecem esse nome; copie
-o snippet `.env.local` exibido pela integraÃ§Ã£o para o seu `.env` local (sem
-versionÃ¡-lo) e use os mesmos comandos.
+Se o ambiente foi configurado na Vercel, use sempre as variáveis de
+`Development`; nunca copie as de Production para a máquina local. Para executar
+um comando sem gravar secrets em arquivo:
+
+```powershell
+npx vercel env run --environment=development -- npx prisma migrate status
+npx vercel env run --environment=development -- npm run dev
+```
+
+Se for necessário materializar as variáveis, `npx vercel env pull
+--environment=development` cria um `.env.local` ignorado pelo Git. O Prisma e o
+seed reconhecem `DATABASE_POSTGRES_PRISMA_URL` e
+`DATABASE_POSTGRES_URL_NON_POOLING`.
 
 `migrate dev` é o fluxo local de criação de migrations; `migrate deploy` aplica migrations versionadas em staging ou produção.
 

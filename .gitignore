@@ -10,3 +10,4 @@ generated/
 *.log
 .vercel
 .env*
+supabase/.temp/

@@ -4,8 +4,8 @@
 
 | Issue | Entrega automática | Dependência manual para aceite |
 | --- | --- | --- |
-| #36 Vercel e ambiente | Projeto ligado, build de produção e variáveis do Supabase auditadas por escopo | Separar Preview/Development de Production e cadastrar credenciais de pagamento |
-| #37 Banco e migrations | `prisma migrate deploy` executa antes de todo build de Production | Provisionar um Supabase não produtivo e retirar o banco de Production do escopo Preview |
+| #36 Vercel e ambiente | Projeto ligado; Production, Preview e Development possuem escopos separados e builds comprovados | Nenhuma |
+| #37 Banco e migrations | `prisma migrate deploy` executa no deploy de Production; Supabase não produtivo possui schema e seed próprios | Nenhuma |
 | #38 Domínio, DNS e HTTPS | Headers HTTPS e URL canônica estão preparados | Informar o domínio comprado e acesso ao DNS; apontar para a Vercel e validar HTTPS |
 | #39 SEO técnico | Metadata, canonical, Open Graph, `robots.txt`, `sitemap.xml` e 404 | Nenhuma |
 | #40 Observabilidade | Logs estruturados sem PII, `/api/health` e monitor externo no GitHub Actions | Ativar notificações de falha do Actions para o responsável pela operação |
@@ -19,20 +19,31 @@ critérios de aceite.
 ## Ambientes
 
 O projeto Vercel `errinhopogs-projects/braga-commerce` está ligado ao repositório.
-Em 14/07/2026, a integração Supabase possuía variáveis somente em `Production` e
-`Preview`, nos mesmos escopos. Nenhuma credencial de Mercado Pago estava presente.
+Em 14/07/2026, foi criado o Supabase `braga-commerce-development`, na região de
+São Paulo, exclusivamente para Preview e Development. A comparação por hash dos
+identificadores confirmou que ele é diferente de Production, sem imprimir URLs,
+senhas ou chaves. Nenhuma credencial de Mercado Pago estava presente.
 
 Configuração desejada:
 
 - Production: Supabase de produção, `MERCADO_PAGO_ENV=production` quando o piloto
   estiver aprovado, URL pública definitiva e webhook de produção.
-- Preview: Supabase separado, credenciais sandbox e URL do deployment de preview.
-- Development: PostgreSQL/Supabase local ou projeto separado, nunca o banco de
-  produção.
+- Preview: Supabase `braga-commerce-development`; credenciais sandbox de pagamento
+  ainda pendentes; deployments protegidos pela autenticação Vercel.
+- Development: o mesmo Supabase não produtivo de Preview, acessado com `vercel env
+  run` ou `vercel env pull --environment=development`.
 
 O build da Vercel usa `npm run vercel-build`. A migration só roda quando
 `VERCEL_ENV=production`; Preview e desenvolvimento nunca aplicam migrations no
 banco de produção por esse script.
+
+Evidências do ambiente não produtivo:
+
+- 4 migrations aplicadas e `prisma migrate status` atualizado;
+- seed da PV Moda aplicado;
+- bucket `product-images` com leitura pública e escrita anônima bloqueada;
+- Preview `dpl_BHvRnMQvsanBUTdrExRXB5nMfSM4` com build Ready;
+- smoke autenticado do Preview: home, sitemap e `/api/health` com banco `ok`.
 
 ## Backup criptografado
 
