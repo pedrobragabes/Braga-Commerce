@@ -8,3 +8,5 @@ coverage/
 generated/
 *.tsbuildinfo
 *.log
+.vercel
+.env*

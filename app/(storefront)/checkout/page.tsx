@@ -3,7 +3,7 @@ import { getCheckoutSettings } from "../../../lib/cart-quote";
 import { CheckoutForm } from "../../../storefront/checkout/checkout-form";
 import { pvModaConfig } from "../../../storefront/config/pv-moda";
 
-export const metadata: Metadata = { title: "Checkout" };
+export const metadata: Metadata = { title: "Checkout", robots: { index: false, follow: false } };
 
 export default async function CheckoutRoute() {
   const settings = await getCheckoutSettings(pvModaConfig.storeSlug);

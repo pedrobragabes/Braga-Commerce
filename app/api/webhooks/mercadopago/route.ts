@@ -2,6 +2,7 @@ import { InvalidWebhookSignatureError } from "mercadopago";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { MercadoPagoIntegrationError } from "../../../../lib/mercado-pago/config";
+import { logEvent } from "../../../../lib/observability/logger";
 import {
   processMercadoPagoPayment,
   validateMercadoPagoWebhookSignature,
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof InvalidWebhookSignatureError) {
-      console.warn("mercado_pago.webhook.invalid_signature", { requestId, reason: error.reason });
+      logEvent("warn", "mercado_pago.webhook.invalid_signature", { requestId, reason: error.reason });
       return NextResponse.json({ error: { code: "INVALID_SIGNATURE" } }, { status: 401 });
     }
     if (error instanceof MercadoPagoIntegrationError) {
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: { code: "INVALID_NOTIFICATION" } }, { status: 400 });
   }
   if (parsedBody.data.type !== "payment") {
-    console.info("mercado_pago.webhook.ignored", { requestId, type: parsedBody.data.type });
+    logEvent("info", "mercado_pago.webhook.ignored", { requestId, type: parsedBody.data.type });
     return NextResponse.json({ received: true, result: "IGNORED_TYPE" }, { status: 202 });
   }
 
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
       requestId,
       parsedBody.data.action ?? parsedBody.data.type,
     );
-    console.info("mercado_pago.webhook.processed", {
+    logEvent("info", "mercado_pago.webhook.processed", {
       requestId,
       paymentId: dataId,
       orderId: outcome.orderId,
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ received: true, result: outcome.result });
   } catch (error) {
-    console.error("mercado_pago.webhook.failed", {
+    logEvent("error", "mercado_pago.webhook.failed", {
       requestId,
       paymentId: dataId,
       errorName: error instanceof Error ? error.name : "UnknownError",

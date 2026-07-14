@@ -1,5 +1,7 @@
 import { MercadoPagoConfig } from "mercadopago";
 
+export { getPublicAppUrl } from "../app-url";
+
 export class MercadoPagoIntegrationError extends Error {
   constructor(
     message: string,
@@ -46,14 +48,6 @@ export function getMercadoPagoWebhookSecret() {
     );
   }
   return secret;
-}
-
-export function getPublicAppUrl() {
-  const explicitUrl = process.env.NEXT_PUBLIC_APP_URL;
-  const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
-  const rawUrl = explicitUrl || (vercelUrl ? `https://${vercelUrl}` : "http://localhost:3000");
-  const url = new URL(rawUrl);
-  return url.origin;
 }
 
 export function assertMercadoPagoCheckoutUrl(rawUrl: string | undefined) {

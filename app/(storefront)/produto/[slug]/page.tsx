@@ -12,7 +12,19 @@ type ProductPageProps = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(pvModaConfig.storeSlug, slug);
-  return { title: product?.name ?? "Produto", description: product?.shortDescription ?? undefined };
+  const image = product?.images[0]?.url;
+  return {
+    title: product?.name ?? "Produto",
+    description: product?.shortDescription ?? undefined,
+    alternates: { canonical: `/produto/${slug}` },
+    openGraph: {
+      type: "website",
+      title: product?.name ?? "Produto",
+      description: product?.shortDescription ?? undefined,
+      url: `/produto/${slug}`,
+      ...(image ? { images: [{ url: image, alt: product?.images[0]?.alt ?? product.name }] } : {}),
+    },
+  };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {

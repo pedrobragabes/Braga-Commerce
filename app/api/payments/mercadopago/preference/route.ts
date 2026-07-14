@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { MercadoPagoIntegrationError } from "../../../../../lib/mercado-pago/config";
 import { createOrderPreference } from "../../../../../lib/mercado-pago/preference";
+import { logEvent } from "../../../../../lib/observability/logger";
 
 const preferenceRequestSchema = z.object({ orderId: z.string().min(1) }).strict();
 
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
     if (error instanceof MercadoPagoIntegrationError) {
       return NextResponse.json({ error: { code: error.code, message: error.message } }, { status: error.status });
     }
-    console.error("mercado_pago.preference.failed", {
+    logEvent("error", "mercado_pago.preference.failed", {
       orderId: result.data.orderId,
       errorName: error instanceof Error ? error.name : "UnknownError",
     });

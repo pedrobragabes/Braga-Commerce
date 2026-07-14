@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import {
   BenefitStrip,
   CategorySection,
@@ -8,6 +9,12 @@ import {
 } from "../../storefront/components/home-sections";
 import { pvModaConfig } from "../../storefront/config/pv-moda";
 import { getFeaturedProducts, getStoreNavigation } from "../../storefront/data";
+
+export const metadata: Metadata = {
+  title: "PV Moda Masculina",
+  description: "Moda masculina essencial e atual, com curadoria local e atendimento próximo.",
+  alternates: { canonical: "/" },
+};
 
 export default async function StoreHomePage() {
   const [navigation, products] = await Promise.all([

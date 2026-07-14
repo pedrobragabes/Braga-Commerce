@@ -1,5 +1,6 @@
 import { Preference } from "mercadopago";
 import { getDatabase } from "../database";
+import { logEvent } from "../observability/logger";
 import {
   assertMercadoPagoCheckoutUrl,
   getMercadoPagoClient,
@@ -94,7 +95,7 @@ export async function createOrderPreference(orderId: string) {
     data: { mercadoPagoPreferenceId: preference.id },
   });
 
-  console.info("mercado_pago.preference.created", {
+  logEvent("info", "mercado_pago.preference.created", {
     orderId: order.id,
     preferenceId: preference.id,
     environment: checkout.environment,

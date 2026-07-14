@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { CartQuoteError, quoteCart } from "../../../../lib/cart-quote";
+import { logEvent } from "../../../../lib/observability/logger";
 import { quoteRequestSchema } from "../../../../storefront/checkout/contracts";
 
 export async function POST(request: Request) {
@@ -24,7 +25,9 @@ export async function POST(request: Request) {
     if (error instanceof CartQuoteError) {
       return NextResponse.json({ error: { code: error.code, message: error.message } }, { status: error.status });
     }
-    console.error("Falha ao cotar carrinho", error);
+    logEvent("error", "cart.quote.failed", {
+      errorName: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json({ error: { code: "QUOTE_FAILED", message: "Não foi possível revisar o carrinho." } }, { status: 500 });
   }
 }

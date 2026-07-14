@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { CartQuoteError } from "../../../lib/cart-quote";
 import { createPendingOrder } from "../../../lib/orders";
+import { logEvent } from "../../../lib/observability/logger";
 import { checkoutRequestSchema } from "../../../storefront/checkout/contracts";
 
 export async function POST(request: Request) {
@@ -19,7 +20,9 @@ export async function POST(request: Request) {
     if (error instanceof CartQuoteError) {
       return NextResponse.json({ error: { code: error.code, message: error.message } }, { status: error.status });
     }
-    console.error("Falha ao criar pedido", error);
+    logEvent("error", "order.create.failed", {
+      errorName: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json({ error: { code: "ORDER_FAILED", message: "Não foi possível criar o pedido agora." } }, { status: 500 });
   }
 }

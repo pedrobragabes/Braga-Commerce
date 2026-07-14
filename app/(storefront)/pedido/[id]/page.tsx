@@ -7,7 +7,7 @@ import { pvModaConfig } from "../../../../storefront/config/pv-moda";
 import { getPublicOrder, getStoreNavigation } from "../../../../storefront/data";
 import { formatCurrency, normalizeWhatsapp } from "../../../../storefront/format";
 
-export const metadata: Metadata = { title: "Pedido recebido" };
+export const metadata: Metadata = { title: "Pedido recebido", robots: { index: false, follow: false } };
 
 export default async function OrderPage({
   params,

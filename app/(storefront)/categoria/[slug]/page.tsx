@@ -10,7 +10,11 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const { slug } = await params;
   const navigation = await getStoreNavigation(pvModaConfig.storeSlug);
   const category = navigation?.categories.find((item) => item.slug === slug);
-  return { title: category?.name ?? "Categoria" };
+  return {
+    title: category?.name ?? "Categoria",
+    description: category?.description ?? `Confira a seleção de ${category?.name ?? "produtos"} da PV Moda.`,
+    alternates: { canonical: `/categoria/${slug}` },
+  };
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {

@@ -6,6 +6,7 @@ import { getCatalogProducts } from "../../../storefront/data";
 export const metadata: Metadata = {
   title: "Produtos",
   description: "Confira camisetas, camisas, polos, calças, bermudas e acessórios da PV Moda.",
+  alternates: { canonical: "/produtos" },
 };
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {

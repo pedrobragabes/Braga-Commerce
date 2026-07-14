@@ -8,7 +8,7 @@
 | M3 — Mercado Pago | Checkout Pro, retorno, webhook e sandbox | Em execução |
 | M4 — Admin MVP | Login do lojista, produtos, estoque e pedidos | Concluído |
 | M5 — Upload e imagens | Storage e imagens seguras | Concluído |
-| M6 — Deploy beta | Domínio, operação e pedido ponta a ponta | Planejado |
+| M6 — Deploy beta | Domínio, operação e pedido ponta a ponta | Em execução |
 | M7 — Pós-MVP controlado | Melhorias comerciais avaliadas após o beta | Backlog |
 
 ## Sequência

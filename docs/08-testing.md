@@ -14,6 +14,9 @@
 - Pagamento aprovado atualiza o pedido uma vez; notificação repetida não duplica nada.
 - Admin sem sessão não acessa `/admin`; uploads inválidos são rejeitados.
 - Layout funciona em celular e metadata/404/robots/sitemap estão presentes.
+- `/api/health` responde 200 somente quando aplicação e banco estão disponíveis.
+- Monitor externo e backup agendado possuem uma execução manual comprovada.
+- Restauração é feita apenas em banco descartável e comparada com o schema atual.
 
 ## Evidência do Milestone 3
 

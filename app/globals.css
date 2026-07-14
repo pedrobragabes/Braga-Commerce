@@ -27,6 +27,13 @@ a { color: inherit; text-decoration: none; }
 svg { display: block; }
 ::selection { background: var(--store-accent); color: white; }
 
+.not-found-page { display: grid; min-height: 100svh; place-items: center; padding: 2rem; background: var(--store-brand); }
+.not-found-card { width: min(100%, 48rem); border-radius: calc(var(--store-radius) * 1.5); padding: clamp(2rem, 7vw, 5rem); background: var(--store-paper); box-shadow: 1rem 1rem 0 var(--store-accent); }
+.not-found-card > span { display: grid; width: 5rem; aspect-ratio: 1; place-items: center; border-radius: 50% 50% 50% 12%; background: var(--store-brand); color: white; font-family: Georgia, serif; font-size: 1.3rem; font-weight: 800; }
+.not-found-card h1 { max-width: 10ch; margin: 1.5rem 0 1rem; font-family: "Iowan Old Style", Georgia, serif; font-size: clamp(3rem, 8vw, 6rem); font-weight: 500; letter-spacing: -.055em; line-height: .9; }
+.not-found-card > p:not(.section-eyebrow) { max-width: 34rem; color: var(--store-muted); line-height: 1.7; }
+.not-found-card > div { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2rem; }
+
 .storefront { min-height: 100svh; background: var(--store-paper); overflow: clip; }
 .store-container { width: min(100% - 2.5rem, 75rem); margin-inline: auto; }
 .store-header { position: relative; z-index: 20; background: var(--store-surface); border-bottom: 1px solid var(--store-line); }

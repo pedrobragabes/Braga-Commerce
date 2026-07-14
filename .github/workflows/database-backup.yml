@@ -1,0 +1,43 @@
+name: Encrypted database backup
+
+on:
+  schedule:
+    - cron: "23 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-database-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Validate backup secrets
+        env:
+          DATABASE_BACKUP_URL: ${{ secrets.DATABASE_BACKUP_URL }}
+          BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.BACKUP_ENCRYPTION_PASSPHRASE }}
+        run: |
+          test -n "$DATABASE_BACKUP_URL"
+          test -n "$BACKUP_ENCRYPTION_PASSPHRASE"
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install --yes postgresql-client
+      - name: Create and encrypt logical backup
+        env:
+          DATABASE_BACKUP_URL: ${{ secrets.DATABASE_BACKUP_URL }}
+          BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.BACKUP_ENCRYPTION_PASSPHRASE }}
+        run: |
+          pg_dump --format=custom --no-owner --no-privileges "$DATABASE_BACKUP_URL" --file database.dump
+          openssl enc -aes-256-cbc -salt -pbkdf2 -in database.dump -out database-${GITHUB_RUN_ID}.dump.enc -pass env:BACKUP_ENCRYPTION_PASSPHRASE
+          rm -f database.dump
+      - name: Store encrypted backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup-${{ github.run_id }}
+          path: database-${{ github.run_id }}.dump.enc
+          if-no-files-found: error
+          retention-days: 30

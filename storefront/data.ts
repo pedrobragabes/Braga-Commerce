@@ -151,6 +151,24 @@ export const getProductBySlug = cache(async (storeSlug: string, productSlug: str
   return product ? mapProduct(product) : null;
 });
 
+export const getSitemapEntries = cache(async (storeSlug: string) => {
+  const database = getDatabase();
+  const [categories, products] = await Promise.all([
+    database.category.findMany({
+      where: { store: { slug: storeSlug }, isActive: true },
+      orderBy: { sortOrder: "asc" },
+      select: { slug: true, updatedAt: true },
+    }),
+    database.product.findMany({
+      where: { store: { slug: storeSlug }, isActive: true },
+      orderBy: { name: "asc" },
+      select: { slug: true, updatedAt: true },
+    }),
+  ]);
+
+  return { categories, products };
+});
+
 export const getPublicOrder = cache(async (storeSlug: string, orderId: string) => {
   return getDatabase().order.findFirst({
     where: { id: orderId, store: { slug: storeSlug } },
