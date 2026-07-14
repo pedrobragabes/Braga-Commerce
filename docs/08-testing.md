@@ -18,6 +18,13 @@
 - Monitor externo e backup agendado possuem uma execução manual comprovada.
 - Restauração é feita apenas em banco descartável e comparada com o schema atual.
 
+## Gate automatizado
+
+O workflow `Quality gate` roda em pull requests e pushes para `main` com Node
+20.19: instalação pelo lockfile, audit de dependências de produção, 52 testes
+unitários, lint, typecheck e build. Dependabot verifica npm e GitHub Actions
+semanalmente. Isso não substitui os smokes autenticados e o pagamento Sandbox.
+
 ## Evidência do Milestone 3
 
 Sem credenciais de teste, os testes locais cobrem configuração, seleção segura

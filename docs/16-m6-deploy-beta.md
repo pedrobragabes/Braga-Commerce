@@ -2,19 +2,19 @@
 
 ## Estado verificável
 
-| Issue | Entrega automática | Dependência manual para aceite |
-| --- | --- | --- |
-| #36 Vercel e ambiente | Projeto ligado; Production, Preview e Development possuem escopos separados e builds comprovados | Nenhuma |
-| #37 Banco e migrations | `prisma migrate deploy` executa no deploy de Production; Supabase não produtivo possui schema e seed próprios | Nenhuma |
-| #38 Domínio, DNS e HTTPS | Headers HTTPS e URL canônica estão preparados | Informar o domínio comprado e acesso ao DNS; apontar para a Vercel e validar HTTPS |
-| #39 SEO técnico | Metadata, canonical, Open Graph, `robots.txt`, `sitemap.xml` e 404 | Nenhuma |
-| #40 Observabilidade | Logs estruturados sem PII, `/api/health` e monitor externo no GitHub Actions | Ativar notificações de falha do Actions para o responsável pela operação |
-| #41 Backup | Exportação diária criptografada e retenção de 30 dias preparadas | Cadastrar secrets, executar o workflow e comprovar restauração em banco descartável |
-| #42 Pedido ponta a ponta | Fluxo técnico implementado desde M3 | Fornecer credenciais sandbox, registrar webhook e concluir um pagamento real de teste |
-| #56 Reserva de estoque | Baixa atômica de produto simples/variação e estado de revisão para pagamento tardio | Nenhuma após smoke de produção |
-| #57 Expiração | Reserva por 30 minutos e GitHub Actions autenticado a cada 10 minutos | Manter Actions habilitado no repositório |
-| #58 Rate limiting | Buckets persistentes por HMAC nas APIs públicas | Nenhuma após smoke de produção |
-| #59 Datas comerciais | `paidAt`, `cancelledAt`, `refundedAt` e relatório por confirmação | Nenhuma após smoke de produção |
+| Issue                    | Entrega automática                                                                                            | Dependência manual para aceite                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| #36 Vercel e ambiente    | Projeto ligado; Production, Preview e Development possuem escopos separados e builds comprovados              | Nenhuma                                                                               |
+| #37 Banco e migrations   | `prisma migrate deploy` executa no deploy de Production; Supabase não produtivo possui schema e seed próprios | Nenhuma                                                                               |
+| #38 Domínio, DNS e HTTPS | Headers HTTPS e URL canônica estão preparados                                                                 | Informar o domínio comprado e acesso ao DNS; apontar para a Vercel e validar HTTPS    |
+| #39 SEO técnico          | Metadata, canonical, Open Graph, `robots.txt`, `sitemap.xml` e 404                                            | Nenhuma                                                                               |
+| #40 Observabilidade      | Logs estruturados sem PII, `/api/health` e monitor externo no GitHub Actions                                  | Ativar notificações de falha do Actions para o responsável pela operação              |
+| #41 Backup               | Exportação diária criptografada e retenção de 30 dias preparadas                                              | Cadastrar secrets, executar o workflow e comprovar restauração em banco descartável   |
+| #42 Pedido ponta a ponta | Fluxo técnico implementado desde M3                                                                           | Fornecer credenciais sandbox, registrar webhook e concluir um pagamento real de teste |
+| #56 Reserva de estoque   | Baixa atômica de produto simples/variação e estado de revisão para pagamento tardio                           | Nenhuma após smoke de produção                                                        |
+| #57 Expiração            | Reserva por 30 minutos e GitHub Actions autenticado a cada 10 minutos                                         | Manter Actions habilitado no repositório                                              |
+| #58 Rate limiting        | Buckets persistentes por HMAC nas APIs públicas                                                               | Nenhuma após smoke de produção                                                        |
+| #59 Datas comerciais     | `paidAt`, `cancelledAt`, `refundedAt` e relatório por confirmação                                             | Nenhuma após smoke de produção                                                        |
 
 Os bloqueios manuais permanecem nas issues obrigatórias do M6. A issue operacional
 do M7 é um espelho consolidado para o responsável pela loja e não substitui os
@@ -40,7 +40,7 @@ Configuração desejada:
 - Preview: Supabase `braga-commerce-development`; credenciais sandbox de pagamento
   ainda pendentes; deployments protegidos pela autenticação Vercel.
 - Development: o mesmo Supabase não produtivo de Preview, acessado com `vercel env
-  run` ou `vercel env pull --environment=development`.
+run` ou `vercel env pull --environment=development`.
 
 O build da Vercel usa `npm run vercel-build`. A migration só roda quando
 `VERCEL_ENV=production`; Preview e desenvolvimento nunca aplicam migrations no
@@ -121,3 +121,8 @@ existir evidência real:
    backup para uma pessoa responsável pela operação.
 7. No go-live, remover `SITE_ACCESS_PASSWORD` e `SITE_ACCESS_SECRET`, publicar de
    novo e só então divulgar a loja. Até lá, o beta continua protegido por senha.
+8. Baixar a CA de Production em **Supabase > Database Settings > SSL
+   Configuration**, cadastrar o PEM como `DATABASE_SSL_CA` na Vercel e comprovar
+   uma conexão com validação de cadeia/hostname. O pooler está criptografado, mas
+   sem essa variável o processo Node ainda usa `sslmode=no-verify` por
+   compatibilidade com a cadeia do Supavisor.

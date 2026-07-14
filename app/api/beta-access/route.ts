@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   BETA_ACCESS_COOKIE,
+  BETA_ACCESS_TTL_SECONDS,
   createBetaAccessToken,
   getBetaAccessConfig,
   verifyBetaPassword,
@@ -21,8 +22,8 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
   const password = formData.get("password");
-  const valid = typeof password === "string"
-    && await verifyBetaPassword(password, config.password);
+  const valid =
+    typeof password === "string" && (await verifyBetaPassword(password, config.password));
 
   if (!valid) {
     return NextResponse.redirect(new URL("/acesso-beta?erro=1", request.url), 303);
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 12,
+    maxAge: BETA_ACCESS_TTL_SECONDS,
   });
   response.headers.set("Cache-Control", "no-store");
   return response;

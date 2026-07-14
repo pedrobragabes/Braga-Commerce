@@ -8,18 +8,25 @@ import {
   validateMercadoPagoWebhookSignature,
 } from "../../../../lib/mercado-pago/webhook";
 
-const webhookSchema = z.object({
-  action: z.string().optional(),
-  type: z.string(),
-  data: z.object({ id: z.union([z.string(), z.number()]) }),
-}).passthrough();
+const webhookSchema = z
+  .object({
+    action: z.string().max(100).optional(),
+    type: z.string().min(1).max(50),
+    data: z.object({
+      id: z.union([
+        z.string().regex(/^\d{1,32}$/),
+        z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+      ]),
+    }),
+  })
+  .passthrough();
 
 export async function POST(request: Request) {
   const requestUrl = new URL(request.url);
   const dataId = requestUrl.searchParams.get("data.id");
   const requestId = request.headers.get("x-request-id");
 
-  if (!dataId) {
+  if (!dataId || !/^\d{1,32}$/.test(dataId) || (requestId?.length ?? 0) > 200) {
     return NextResponse.json({ error: { code: "DATA_ID_MISSING" } }, { status: 400 });
   }
 
@@ -31,7 +38,10 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof InvalidWebhookSignatureError) {
-      logEvent("warn", "mercado_pago.webhook.invalid_signature", { requestId, reason: error.reason });
+      logEvent("warn", "mercado_pago.webhook.invalid_signature", {
+        requestId,
+        reason: error.reason,
+      });
       return NextResponse.json({ error: { code: "INVALID_SIGNATURE" } }, { status: 401 });
     }
     if (error instanceof MercadoPagoIntegrationError) {

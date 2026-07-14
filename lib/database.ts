@@ -1,6 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
-import { getRuntimeDatabaseUrl, normalizePostgresUrl } from "./database-url";
+import { getPostgresConnectionConfig, getRuntimeDatabaseUrl } from "./database-url";
 
 const globalForDatabase = globalThis as typeof globalThis & {
   bragaCommerceDatabase?: PrismaClient;
@@ -14,11 +14,9 @@ export function getDatabase() {
   }
 
   if (!globalForDatabase.bragaCommerceDatabase) {
+    const connectionConfig = getPostgresConnectionConfig(connectionString);
     globalForDatabase.bragaCommerceDatabase = new PrismaClient({
-      adapter: new PrismaPg({
-        connectionString: normalizePostgresUrl(connectionString),
-        ssl: { rejectUnauthorized: false },
-      }),
+      adapter: new PrismaPg(connectionConfig),
     });
   }
 

@@ -39,8 +39,12 @@ describe("admin authorization", () => {
     expect(can("STAFF", "catalog:write")).toBe(false);
     expect(can("STAFF", "inventory:write")).toBe(true);
     expect(can("STAFF", "orders:write")).toBe(true);
-    expect(visibleAdminSections("STAFF").some((item) => item.href === "/admin/relatorios")).toBe(true);
-    expect(visibleAdminSections("STAFF").some((item) => item.href === "/admin/configuracoes")).toBe(false);
+    expect(visibleAdminSections("STAFF").some((item) => item.href === "/admin/relatorios")).toBe(
+      true,
+    );
+    expect(visibleAdminSections("STAFF").some((item) => item.href === "/admin/configuracoes")).toBe(
+      false,
+    );
   });
 });
 
@@ -63,10 +67,12 @@ describe("admin value normalization", () => {
     expect(parseAdminMoney("abc")).toBeNull();
     expect(parseAdminMoney("")).toBeNull();
     expect(parseAdminMoney("1.234")).toBeNull();
+    expect(parseAdminMoney("21474836.48")).toBeNull();
     expect(parseAdminInteger("12")).toBe(12);
     expect(parseAdminInteger("1.5")).toBeNull();
     expect(parseAdminInteger("1item")).toBeNull();
     expect(parseAdminInteger("-1")).toBeNull();
+    expect(parseAdminInteger("2147483648")).toBeNull();
     expect(parseAdminColor("#D66A2F")).toBe("#d66a2f");
     expect(parseAdminColor("red")).toBeNull();
     expect(parseAdminState("sp")).toBe("SP");
@@ -101,8 +107,12 @@ describe("CSV export rules", () => {
 
   it("builds an Excel-friendly UTF-8 CSV with exact cents", () => {
     expect(formatCentsForCsv(11580)).toBe("115.80");
-    expect(buildCsv([["pedido", "total"], ["abc", formatCentsForCsv(11580)]]))
-      .toBe('\uFEFF"pedido","total"\r\n"abc","115.80"\r\n');
+    expect(
+      buildCsv([
+        ["pedido", "total"],
+        ["abc", formatCentsForCsv(11580)],
+      ]),
+    ).toBe('\uFEFF"pedido","total"\r\n"abc","115.80"\r\n');
   });
 });
 

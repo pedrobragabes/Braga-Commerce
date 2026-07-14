@@ -7,7 +7,9 @@ Next.js na Vercel, PostgreSQL/Supabase, Supabase Storage, DNS Cloudflare e Merca
 ## Checklist
 
 1. Criar projeto e banco de produção separados do desenvolvimento.
-2. Configurar todas as variáveis da `.env.example` na Vercel.
+2. Configurar todas as variáveis necessárias da `.env.example` na Vercel.
+   Para Supabase, baixar a CA do projeto, cadastrar `DATABASE_SSL_CA` e comprovar
+   validação completa de certificado antes do go-live.
 3. Executar `prisma migrate deploy` durante o deploy.
 4. Configurar domínio e HTTPS; ajustar `NEXT_PUBLIC_APP_URL`.
 5. Executar `npm run storage:setup` e `npm run storage:smoke` para o bucket do M5.

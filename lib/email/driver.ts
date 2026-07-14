@@ -7,7 +7,10 @@ export function getEmailDriverName() {
 export function isEmailDriverReady() {
   const driver = getEmailDriverName();
   if (driver === "development") return process.env.NODE_ENV !== "production";
-  return driver === "resend" && Boolean(process.env.RESEND_API_KEY?.trim() && process.env.EMAIL_FROM?.trim());
+  return (
+    driver === "resend" &&
+    Boolean(process.env.RESEND_API_KEY?.trim() && process.env.EMAIL_FROM?.trim())
+  );
 }
 
 export async function sendEmail(message: EmailMessage) {
@@ -23,8 +26,19 @@ export async function sendEmail(message: EmailMessage) {
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from, to: [message.to], subject: message.subject, text: message.text, html: message.html }),
+    signal: AbortSignal.timeout(10_000),
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": message.eventId,
+    },
+    body: JSON.stringify({
+      from,
+      to: [message.to],
+      subject: message.subject,
+      text: message.text,
+      html: message.html,
+    }),
   });
   if (!response.ok) throw new Error(`EMAIL_PROVIDER_${response.status}`);
 }

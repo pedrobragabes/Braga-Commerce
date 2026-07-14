@@ -11,10 +11,7 @@ const fulfillmentTransitions: Record<FulfillmentStatus, ReadonlySet<FulfillmentS
   CANCELLED: new Set(),
 };
 
-export function canTransitionFulfillment(
-  current: FulfillmentStatus,
-  next: FulfillmentStatus,
-) {
+export function canTransitionFulfillment(current: FulfillmentStatus, next: FulfillmentStatus) {
   return current === next || fulfillmentTransitions[current].has(next);
 }
 
@@ -50,14 +47,16 @@ export function parseAdminMoney(value: string) {
   const amount = Number(normalized);
   if (!Number.isFinite(amount) || amount < 0) return null;
   const cents = Math.round(amount * 100);
-  return Number.isSafeInteger(cents) ? cents : null;
+  return Number.isSafeInteger(cents) && cents <= 2_147_483_647 ? cents : null;
 }
 
 export function parseAdminInteger(value: string, minimum = 0) {
   const normalized = value.trim();
   if (!/^-?\d+$/.test(normalized)) return null;
   const parsed = Number(normalized);
-  return Number.isSafeInteger(parsed) && parsed >= minimum ? parsed : null;
+  return Number.isSafeInteger(parsed) && parsed >= minimum && parsed <= 2_147_483_647
+    ? parsed
+    : null;
 }
 
 export function parseAdminColor(value: string) {

@@ -40,16 +40,21 @@ export async function processMercadoPagoPayment(
     return { result: "DUPLICATE", orderId: existingEvent.orderId, providerStatus };
   }
 
-  const metadataOrderId = payment.metadata && typeof payment.metadata === "object"
-    ? (payment.metadata as Record<string, unknown>).order_id
-    : undefined;
-  const orderId = typeof payment.external_reference === "string"
-    ? payment.external_reference
-    : typeof metadataOrderId === "string" ? metadataOrderId : null;
+  const metadataOrderId =
+    payment.metadata && typeof payment.metadata === "object"
+      ? (payment.metadata as Record<string, unknown>).order_id
+      : undefined;
+  const orderId =
+    typeof payment.external_reference === "string"
+      ? payment.external_reference
+      : typeof metadataOrderId === "string"
+        ? metadataOrderId
+        : null;
   const transition = mapMercadoPagoStatus(providerStatus);
-  const amountCents = typeof payment.transaction_amount === "number"
-    ? Math.round(payment.transaction_amount * 100)
-    : null;
+  const amountCents =
+    typeof payment.transaction_amount === "number"
+      ? Math.round(payment.transaction_amount * 100)
+      : null;
 
   return database.$transaction(async (transaction) => {
     const event = await transaction.paymentEvent.upsert({
@@ -66,36 +71,45 @@ export async function processMercadoPagoPayment(
       },
     });
 
-    if (event.result !== "RECEIVED") {
+    const claimed = await transaction.paymentEvent.updateMany({
+      where: { id: event.id, result: "RECEIVED" },
+      data: { result: "PROCESSING" },
+    });
+    if (claimed.count !== 1) {
       return { result: "DUPLICATE", orderId: event.orderId, providerStatus };
     }
 
-    const order = orderId ? await transaction.order.findUnique({
-      where: { id: orderId },
-      select: {
-        id: true,
-        storeId: true,
-        totalCents: true,
-        paymentStatus: true,
-        mercadoPagoPaymentId: true,
-        inventoryStatus: true,
-        paidAt: true,
-        cancelledAt: true,
-        refundedAt: true,
-        customerEmail: true,
-        items: { select: { productId: true, variantId: true, quantity: true } },
-      },
-    }) : null;
+    const order = orderId
+      ? await transaction.order.findUnique({
+          where: { id: orderId },
+          select: {
+            id: true,
+            storeId: true,
+            totalCents: true,
+            paymentStatus: true,
+            mercadoPagoPaymentId: true,
+            inventoryStatus: true,
+            paidAt: true,
+            cancelledAt: true,
+            refundedAt: true,
+            customerEmail: true,
+            items: { select: { productId: true, variantId: true, quantity: true } },
+          },
+        })
+      : null;
 
     let result = "APPLIED";
     if (!order) result = "ORDER_NOT_FOUND";
     else if (amountCents === null || amountCents !== order.totalCents) result = "AMOUNT_MISMATCH";
     else if (!transition) result = "IGNORED_STATUS";
-    else if (!shouldApplyPaymentTransition(
-      order.paymentStatus as InternalPaymentStatus,
-      transition.paymentStatus,
-      order.mercadoPagoPaymentId === paymentId,
-    )) result = "IGNORED_STALE";
+    else if (
+      !shouldApplyPaymentTransition(
+        order.paymentStatus as InternalPaymentStatus,
+        transition.paymentStatus,
+        order.mercadoPagoPaymentId === paymentId,
+      )
+    )
+      result = "IGNORED_STALE";
     else {
       const now = new Date();
       if (transition.paymentStatus === "PAID") {
@@ -145,19 +159,24 @@ export async function processMercadoPagoPayment(
             status: transition.orderStatus,
             paymentStatus: transition.paymentStatus,
             mercadoPagoPaymentId: paymentId,
-            ...(transition.paymentStatus === "CANCELLED" ? { cancelledAt: order.cancelledAt ?? now } : {}),
-            ...(transition.paymentStatus === "REFUNDED" ? { refundedAt: order.refundedAt ?? now } : {}),
+            ...(transition.paymentStatus === "CANCELLED"
+              ? { cancelledAt: order.cancelledAt ?? now }
+              : {}),
+            ...(transition.paymentStatus === "REFUNDED"
+              ? { refundedAt: order.refundedAt ?? now }
+              : {}),
           },
         });
       }
 
-      const emailType = transition.paymentStatus === "PAID"
-        ? "PAYMENT_CONFIRMED" as const
-        : transition.paymentStatus === "CANCELLED"
-          ? "ORDER_CANCELLED" as const
-          : transition.paymentStatus === "REFUNDED"
-            ? "PAYMENT_REFUNDED" as const
-            : null;
+      const emailType =
+        transition.paymentStatus === "PAID"
+          ? ("PAYMENT_CONFIRMED" as const)
+          : transition.paymentStatus === "CANCELLED"
+            ? ("ORDER_CANCELLED" as const)
+            : transition.paymentStatus === "REFUNDED"
+              ? ("PAYMENT_REFUNDED" as const)
+              : null;
       if (emailType && order.customerEmail) {
         await transaction.emailOutbox.upsert({
           where: { eventKey: `order:${order.id}:${emailType.toLowerCase()}` },

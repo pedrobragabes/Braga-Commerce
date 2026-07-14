@@ -1,11 +1,10 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
-import { normalizePostgresUrl } from "../lib/database-url";
+import { getPostgresConnectionConfig } from "../lib/database-url";
 import { PV_MODA_CATEGORIES, PV_MODA_PRODUCTS, validatePvModaSeed } from "./seed-data";
 
-const connectionString =
-  process.env.DATABASE_URL ?? process.env.DATABASE_POSTGRES_PRISMA_URL;
+const connectionString = process.env.DATABASE_URL ?? process.env.DATABASE_POSTGRES_PRISMA_URL;
 
 if (!connectionString) {
   throw new Error(
@@ -14,13 +13,7 @@ if (!connectionString) {
 }
 
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({
-    connectionString: normalizePostgresUrl(connectionString),
-    // Supavisor's pooler can expose a certificate chain that Node does not
-    // trust by default. The connection remains encrypted; this only bypasses
-    // chain validation for this hosted database connection.
-    ssl: { rejectUnauthorized: false },
-  }),
+  adapter: new PrismaPg(getPostgresConnectionConfig(connectionString)),
 });
 
 async function main() {

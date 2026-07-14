@@ -5,7 +5,7 @@ import { createOrderPreference } from "../../../../../lib/mercado-pago/preferenc
 import { logEvent } from "../../../../../lib/observability/logger";
 import { enforceRateLimit, rateLimitPolicies } from "../../../../../lib/rate-limit";
 
-const preferenceRequestSchema = z.object({ orderId: z.string().min(1) }).strict();
+const preferenceRequestSchema = z.object({ orderId: z.string().min(1).max(80) }).strict();
 
 export async function POST(request: Request) {
   const limited = await enforceRateLimit(request, rateLimitPolicies.preference);
@@ -23,14 +23,22 @@ export async function POST(request: Request) {
     return NextResponse.json(preference);
   } catch (error) {
     if (error instanceof MercadoPagoIntegrationError) {
-      return NextResponse.json({ error: { code: error.code, message: error.message } }, { status: error.status });
+      return NextResponse.json(
+        { error: { code: error.code, message: error.message } },
+        { status: error.status },
+      );
     }
     logEvent("error", "mercado_pago.preference.failed", {
       orderId: result.data.orderId,
       errorName: error instanceof Error ? error.name : "UnknownError",
     });
     return NextResponse.json(
-      { error: { code: "PREFERENCE_FAILED", message: "Não foi possível iniciar o pagamento agora." } },
+      {
+        error: {
+          code: "PREFERENCE_FAILED",
+          message: "Não foi possível iniciar o pagamento agora.",
+        },
+      },
       { status: 502 },
     );
   }
