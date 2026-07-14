@@ -12,7 +12,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
   if (!store) return null;
   return (
     <>
-      <AdminPageHeader index="05" eyebrow="Identidade operacional" title="Ajustes da loja." description="Contato e modalidades isolados por loja. Credenciais de pagamento não passam por este painel." />
+      <AdminPageHeader index="06" eyebrow="Identidade operacional" title="Ajustes da loja." description="Contato e modalidades isolados por loja. Credenciais de pagamento não passam por este painel." />
       <SavedNotice show={Boolean(saved)} />
       <form action={updateStoreSettings} className="admin-form-card admin-settings-form">
         <div className="admin-card-heading"><div><p className="admin-kicker">Dados públicos</p><h2>Contato e endereço</h2></div><span>{store.slug}</span></div>
@@ -20,9 +20,10 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
         <hr />
         <div className="admin-card-heading"><div><p className="admin-kicker">Atendimento</p><h2>Entrega e retirada</h2></div></div>
         <div className="admin-check-row cards"><label><input defaultChecked={store.settings?.allowLocalPickup ?? true} name="allowLocalPickup" type="checkbox" /><span><strong>Retirada local</strong><small>Cliente combina a retirada na loja.</small></span></label><label><input defaultChecked={store.settings?.allowLocalDelivery ?? false} name="allowLocalDelivery" type="checkbox" /><span><strong>Entrega local</strong><small>Ativa endereço no checkout.</small></span></label></div>
-        <div className="admin-form-grid compact"><label><span>Taxa de entrega</span><input defaultValue={decimal(store.settings?.localDeliveryFeeCents)} min="0" name="localDeliveryFee" required step="0.01" type="number" /></label><label><span>Cor principal</span><input defaultValue={store.settings?.primaryColor ?? "#284d3b"} name="primaryColor" pattern="^#[0-9A-Fa-f]{6}$" /></label><label><span>Cor secundária</span><input defaultValue={store.settings?.secondaryColor ?? "#d66a2f"} name="secondaryColor" pattern="^#[0-9A-Fa-f]{6}$" /></label></div>
+        <div className="admin-form-grid compact"><label><span>Taxa de entrega</span><input defaultValue={decimal(store.settings?.localDeliveryFeeCents)} min="0" name="localDeliveryFee" required step="0.01" type="number" /></label><label><span>Cor principal proposta</span><input defaultValue={store.settings?.primaryColor ?? "#284d3b"} name="primaryColor" pattern="^#[0-9A-Fa-f]{6}$" /></label><label><span>Cor secundária proposta</span><input defaultValue={store.settings?.secondaryColor ?? "#d66a2f"} name="secondaryColor" pattern="^#[0-9A-Fa-f]{6}$" /></label></div>
+        <div className="admin-alert">As cores ficam salvas como proposta, mas a vitrine atual continua usando a identidade visual versionada. A aplicação automática depende de preview, contraste e rollback.</div>
         <div className="admin-security-note"><strong>Pagamento protegido</strong><p>Tokens e secrets do Mercado Pago continuam exclusivos do ambiente do servidor e não são editáveis aqui.</p></div>
-        <div className="admin-form-footer"><p>As alterações públicas aparecem na próxima renderização da vitrine.</p><button className="admin-button primary" type="submit">Salvar configurações →</button></div>
+        <div className="admin-form-footer"><p>Contato, endereço e entrega aparecem na próxima renderização. As cores ainda não são aplicadas automaticamente.</p><button className="admin-button primary" type="submit">Salvar configurações →</button></div>
       </form>
     </>
   );

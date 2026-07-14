@@ -21,9 +21,10 @@ lib                   -> conexão e integrações compartilhadas
 ```
 
 Uma nova implantação pode copiar a configuração da PV Moda e substituir cores,
-textos e conteúdo editorial. Componentes e consultas continuam os mesmos. Um
-editor de temas no painel permanece pós-MVP; a customização atual é feita por
-configuração versionada.
+textos e conteúdo editorial. Componentes e consultas continuam os mesmos. A
+customização atual é feita por configuração versionada; os campos de cor
+persistidos ainda não são consumidos pelo storefront. O contrato de overrides
+seguros e blocos fixos está em `docs/19-store-theme-contract.md`.
 
 ## Diagrama textual
 

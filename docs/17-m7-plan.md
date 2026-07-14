@@ -9,8 +9,8 @@
 | 2 | #44 Frete por CEP | Bloqueada | Credenciais Sandbox e dados de origem/produto |
 | 3 | #48 Relatório de vendas | Concluída | Admin e pedidos persistidos já disponíveis |
 | 4 | #49 Exportação CSV | Concluída | Filtros e autorização do relatório concluídos na #48 |
-| 5 | #50 Tema configurável | Próxima | Limites antes do polimento visual |
-| 6 | #53 Direção visual e motion | Pendente | Direção aprovada e limites da #50 |
+| 5 | #50 Tema configurável | Concluída | Limites antes do polimento visual |
+| 6 | #53 Direção visual e motion | Próxima | Direção aprovada e limites da #50 |
 | 7 | #47 Troca e privacidade | Pendente | Texto precisa de revisão do responsável |
 | 8 | #46 E-mails transacionais | Bloqueada | Eventos reais de pedido/pagamento estáveis |
 | 9 | #43 Cupom simples | Bloqueada | Pagamento real estável, conforme a própria issue |
