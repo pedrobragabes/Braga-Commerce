@@ -14,9 +14,7 @@ import {
   slugifyAdminValue,
 } from "../../lib/admin-rules";
 import { getDatabase } from "../../lib/database";
-import { createStorageAdminClient } from "../../lib/storage/admin";
-import { getStorageBucketName } from "../../lib/storage/config";
-import { moveProductImageInOrder } from "../../lib/storage/order";
+import { moveStoredProductImage, removeStoredProductImage } from "../../lib/storage/product-images";
 
 const idSchema = z.string().min(1).max(80);
 const optionalText = z.string().trim().max(500).optional();
@@ -124,35 +122,12 @@ export async function toggleProduct(formData: FormData) {
   revalidatePath("/produtos");
 }
 
-async function getProductGallery(productId: string, storeId: string) {
-  return getDatabase().product.findFirst({
-    where: { id: productId, storeId },
-    select: {
-      id: true,
-      slug: true,
-      images: {
-        orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
-        select: { id: true, storagePath: true },
-      },
-    },
-  });
-}
-
 export async function moveProductImage(formData: FormData) {
   const session = await requireAdminAction("images:write");
   const productId = idSchema.parse(formData.get("productId"));
   const imageId = idSchema.parse(formData.get("imageId"));
   const direction = z.enum(["up", "down"]).parse(formData.get("direction"));
-  const product = await getProductGallery(productId, session.storeId);
-  if (!product) throw new Error("PRODUCT_NOT_FOUND");
-
-  const ordered = moveProductImageInOrder(product.images, imageId, direction);
-  if (!ordered) throw new Error("IMAGE_NOT_FOUND");
-  await getDatabase().$transaction(
-    ordered.map((image, sortOrder) =>
-      getDatabase().productImage.update({ where: { id: image.id }, data: { sortOrder } }),
-    ),
-  );
+  const product = await moveStoredProductImage({ storeId: session.storeId, productId, imageId, direction });
   revalidatePath(`/admin/produtos/${product.id}`);
   revalidatePath(`/produto/${product.slug}`);
 }
@@ -161,25 +136,7 @@ export async function removeProductImage(formData: FormData) {
   const session = await requireAdminAction("images:write");
   const productId = idSchema.parse(formData.get("productId"));
   const imageId = idSchema.parse(formData.get("imageId"));
-  const product = await getProductGallery(productId, session.storeId);
-  if (!product) throw new Error("PRODUCT_NOT_FOUND");
-  const image = product.images.find((item) => item.id === imageId);
-  if (!image) throw new Error("IMAGE_NOT_FOUND");
-
-  if (image.storagePath) {
-    const { error } = await createStorageAdminClient()
-      .storage.from(getStorageBucketName())
-      .remove([image.storagePath]);
-    if (error) throw new Error("STORAGE_REMOVE_FAILED");
-  }
-
-  const remaining = product.images.filter((item) => item.id !== image.id);
-  await getDatabase().$transaction([
-    getDatabase().productImage.delete({ where: { id: image.id } }),
-    ...remaining.map((item, sortOrder) =>
-      getDatabase().productImage.update({ where: { id: item.id }, data: { sortOrder } }),
-    ),
-  ]);
+  const product = await removeStoredProductImage({ storeId: session.storeId, productId, imageId });
   revalidatePath(`/admin/produtos/${product.id}`);
   revalidatePath(`/produto/${product.slug}`);
 }

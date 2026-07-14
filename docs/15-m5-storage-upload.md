@@ -54,7 +54,23 @@ da referência e as posições restantes são normalizadas. Registros legados se
 - [x] Upload anônimo bloqueado.
 - [x] Leitura da URL pública confirmada.
 - [x] Arquivo técnico removido após o smoke de Storage.
-- [ ] OWNER/ADMIN enviam, ordenam e removem pelo painel publicado.
-- [ ] STAFF recebe `403` na API e não vê controles de imagem.
-- [ ] JPG/PNG/WebP válidos aparecem no storefront publicado.
-- [ ] SVG, MIME forjado e arquivo acima de 4 MiB retornam `400`.
+- [x] OWNER/ADMIN enviam, ordenam e removem pelo painel publicado.
+- [x] STAFF recebe `403` na API e não vê controles de imagem.
+- [x] JPG/PNG/WebP válidos aparecem no storefront publicado.
+- [x] SVG, MIME forjado e arquivo acima de 4 MiB retornam `400`.
+
+## Evidência final
+
+- `POST /api/upload` retornou `401` sem sessão e `403` para STAFF.
+- SVG, MIME forjado e arquivo acima de 4 MiB retornaram `400` sem criar objeto.
+- Dois PNGs foram enviados, persistidos e lidos pelas URLs públicas.
+- A segunda imagem foi movida para a primeira posição; reload e storefront
+  confirmaram que ela se tornou a imagem principal.
+- A remoção apagou objeto e referência, e normalizou `sortOrder` da imagem
+  restante.
+- OWNER recebeu controles de upload; STAFF visualizou a galeria somente para
+  leitura.
+- Revisão em 390 px confirmou conteúdo, lista e formulário dentro de 351 px,
+  sem overflow horizontal.
+- `images:smoke:cleanup` removeu a imagem restante; os dois operadores técnicos
+  foram removidos do Supabase Auth e do Prisma.

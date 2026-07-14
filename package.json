@@ -28,7 +28,10 @@
     "admin:smoke:verify": "tsx scripts/smoke-admin-m4.ts verify",
     "admin:smoke:cleanup": "tsx scripts/smoke-admin-m4.ts cleanup",
     "storage:setup": "tsx scripts/setup-storage.ts",
-    "storage:smoke": "tsx scripts/smoke-storage.ts"
+    "storage:smoke": "tsx scripts/smoke-storage.ts",
+    "images:smoke:setup": "tsx scripts/smoke-images-m5.ts setup",
+    "images:smoke:verify": "tsx scripts/smoke-images-m5.ts verify",
+    "images:smoke:cleanup": "tsx scripts/smoke-images-m5.ts cleanup"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
