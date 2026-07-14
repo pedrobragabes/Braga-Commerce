@@ -9,7 +9,8 @@ const marks: Record<string, string> = {
   Produtos: "02",
   Categorias: "03",
   Pedidos: "04",
-  Configurações: "05",
+  Relatórios: "05",
+  Configurações: "06",
 };
 
 export function AdminShell({ session, children }: { session: AdminSession; children: ReactNode }) {

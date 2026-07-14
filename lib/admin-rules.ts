@@ -28,6 +28,7 @@ export function visibleAdminSections(role: UserRole) {
     { href: "/admin/produtos", label: "Produtos", permission: "catalog:read" },
     { href: "/admin/categorias", label: "Categorias", permission: "catalog:read" },
     { href: "/admin/pedidos", label: "Pedidos", permission: "orders:read" },
+    { href: "/admin/relatorios", label: "Relatórios", permission: "orders:read" },
     { href: "/admin/configuracoes", label: "Configurações", permission: "settings:write" },
   ];
   return sections.filter((section) => can(role, section.permission));

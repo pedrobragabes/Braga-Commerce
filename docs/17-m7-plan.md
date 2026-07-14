@@ -6,9 +6,9 @@
 | --- | --- | --- | --- |
 | 0 | #55 Proteção temporária do beta | Concluída | Nenhuma; segurança antes das demais mudanças |
 | 1 | #45 Avaliar Melhor Envio | Concluída | Pesquisa antes de implementar frete |
-| 2 | #44 Frete por CEP | Próxima | Credenciais Sandbox e dados de origem/produto |
-| 3 | #48 Relatório de vendas | Pendente | Admin e pedidos persistidos já disponíveis |
-| 4 | #49 Exportação CSV | Pendente | Filtros e autorização do relatório |
+| 2 | #44 Frete por CEP | Bloqueada | Credenciais Sandbox e dados de origem/produto |
+| 3 | #48 Relatório de vendas | Concluída | Admin e pedidos persistidos já disponíveis |
+| 4 | #49 Exportação CSV | Próxima | Filtros e autorização do relatório concluídos na #48 |
 | 5 | #50 Tema configurável | Pendente | Limites antes do polimento visual |
 | 6 | #53 Direção visual e motion | Pendente | Direção aprovada e limites da #50 |
 | 7 | #47 Troca e privacidade | Pendente | Texto precisa de revisão do responsável |

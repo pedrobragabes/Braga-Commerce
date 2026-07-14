@@ -11,6 +11,7 @@ import {
   visibleAdminSections,
 } from "../../lib/admin-rules";
 import { getSupabasePublicConfig, SupabaseConfigurationError } from "../../lib/supabase/config";
+import { calculateAverageTicket, resolveSalesPeriod } from "../../lib/sales-report";
 
 const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -37,6 +38,7 @@ describe("admin authorization", () => {
     expect(can("STAFF", "catalog:write")).toBe(false);
     expect(can("STAFF", "inventory:write")).toBe(true);
     expect(can("STAFF", "orders:write")).toBe(true);
+    expect(visibleAdminSections("STAFF").some((item) => item.href === "/admin/relatorios")).toBe(true);
     expect(visibleAdminSections("STAFF").some((item) => item.href === "/admin/configuracoes")).toBe(false);
   });
 });
@@ -68,6 +70,23 @@ describe("admin value normalization", () => {
     expect(parseAdminColor("red")).toBeNull();
     expect(parseAdminState("sp")).toBe("SP");
     expect(parseAdminState("São Paulo")).toBeNull();
+  });
+});
+
+describe("sales report rules", () => {
+  it("uses a safe default and calculates rolling periods on the server", () => {
+    const now = new Date("2026-07-14T18:00:00.000Z");
+    const defaultPeriod = resolveSalesPeriod(undefined, now);
+    expect(defaultPeriod.key).toBe("30d");
+    expect(defaultPeriod.since?.toISOString()).toBe("2026-06-14T18:00:00.000Z");
+    expect(defaultPeriod.until).not.toBe(now);
+    expect(resolveSalesPeriod("invalid", now).key).toBe("30d");
+    expect(resolveSalesPeriod("all", now).since).toBeNull();
+  });
+
+  it("returns an integer average and handles an empty period", () => {
+    expect(calculateAverageTicket(29981, 2)).toBe(14991);
+    expect(calculateAverageTicket(0, 0)).toBe(0);
   });
 });
 
