@@ -55,7 +55,7 @@ export default async function AdminSalesReportPage({
         eyebrow="Leitura comercial"
         title="Vendas sem adivinhação."
         description="Somente pedidos com pagamento confirmado entram nos números. O filtro e o isolamento da loja são aplicados no servidor."
-        action={<Link className="admin-button ghost" href="/admin/pedidos">Ver pedidos →</Link>}
+        action={<a className="admin-button primary" href={`/api/admin/orders/export?period=${selectedPeriod.key}`}>Exportar CSV ↓</a>}
       />
       <nav className="admin-filter-tabs" aria-label="Período do relatório">
         {salesPeriodOptions.map((option) => (

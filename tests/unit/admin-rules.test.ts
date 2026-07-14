@@ -12,6 +12,7 @@ import {
 } from "../../lib/admin-rules";
 import { getSupabasePublicConfig, SupabaseConfigurationError } from "../../lib/supabase/config";
 import { calculateAverageTicket, resolveSalesPeriod } from "../../lib/sales-report";
+import { buildCsv, escapeCsvCell, formatCentsForCsv } from "../../lib/csv";
 
 const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -87,6 +88,21 @@ describe("sales report rules", () => {
   it("returns an integer average and handles an empty period", () => {
     expect(calculateAverageTicket(29981, 2)).toBe(14991);
     expect(calculateAverageTicket(0, 0)).toBe(0);
+  });
+});
+
+describe("CSV export rules", () => {
+  it("escapes quotes, line breaks and spreadsheet formulas", () => {
+    expect(escapeCsvCell('Camisa "Linho"\nPremium')).toBe('"Camisa ""Linho"" Premium"');
+    expect(escapeCsvCell("=HYPERLINK(1)")).toBe('"\'=HYPERLINK(1)"');
+    expect(escapeCsvCell("-10+20")).toBe('"\'-10+20"');
+    expect(escapeCsvCell("\t=SUM(1,1)")).toBe('"\'\t=SUM(1,1)"');
+  });
+
+  it("builds an Excel-friendly UTF-8 CSV with exact cents", () => {
+    expect(formatCentsForCsv(11580)).toBe("115.80");
+    expect(buildCsv([["pedido", "total"], ["abc", formatCentsForCsv(11580)]]))
+      .toBe('\uFEFF"pedido","total"\r\n"abc","115.80"\r\n');
   });
 });
 
