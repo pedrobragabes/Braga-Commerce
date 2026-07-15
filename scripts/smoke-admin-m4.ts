@@ -87,7 +87,7 @@ async function setup() {
 
     const unitPriceCents = variant?.priceCents ?? product.basePriceCents;
     const customer = await database.customer.create({
-      data: { name: `Teste técnico M4 ${runId}`, phone: "00000000000" },
+      data: { storeId: pilotStore.id, name: `Teste técnico M4 ${runId}`, phone: "00000000000" },
     });
     const order = await database.order.create({
       data: {

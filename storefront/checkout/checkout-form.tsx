@@ -11,6 +11,18 @@ import type { CheckoutDeliveryMethod, CheckoutSettings } from "./contracts";
 
 type CheckoutFormProps = { storeSlug: string; settings: CheckoutSettings };
 
+export function getCheckoutStage({ ready, loading, itemCount, submitting }: {
+  ready: boolean;
+  loading: boolean;
+  itemCount: number;
+  submitting: boolean;
+}) {
+  if (submitting && itemCount === 0) return "finalizing" as const;
+  if (!ready || loading) return "loading" as const;
+  if (itemCount === 0) return "empty" as const;
+  return "form" as const;
+}
+
 export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
   const router = useRouter();
   const { items, ready, clearCart } = useCart();
@@ -20,8 +32,10 @@ export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  if (!ready || loading) return <div className="cart-loading">Preparando checkout…</div>;
-  if (!items.length) {
+  const stage = getCheckoutStage({ ready, loading, itemCount: items.length, submitting });
+  if (stage === "finalizing") return <div className="cart-loading">Finalizando seu pedido…</div>;
+  if (stage === "loading") return <div className="cart-loading">Preparando checkout…</div>;
+  if (stage === "empty") {
     return <div className="checkout-empty"><h1>Seu carrinho está vazio.</h1><p>Adicione uma peça antes de preencher o checkout.</p><Link className="primary-button" href="/produtos">Ver produtos</Link></div>;
   }
 
@@ -62,15 +76,23 @@ export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error?.message ?? "Não foi possível criar o pedido.");
+      let preferenceResponse: Response;
+      try {
+        preferenceResponse = await fetch("/api/payments/mercadopago/preference", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: payload.orderId }),
+        });
+      } catch {
+        clearCart();
+        router.replace(`/pedido/${payload.orderId}?payment=unavailable`);
+        return;
+      }
+
+      const preferencePayload = await preferenceResponse.json().catch(() => null);
       clearCart();
-      const preferenceResponse = await fetch("/api/payments/mercadopago/preference", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: payload.orderId }),
-      });
-      const preferencePayload = await preferenceResponse.json();
-      if (!preferenceResponse.ok) {
-        router.push(`/pedido/${payload.orderId}?payment=unavailable`);
+      if (!preferenceResponse.ok || !preferencePayload?.checkoutUrl) {
+        router.replace(`/pedido/${payload.orderId}?payment=unavailable`);
         return;
       }
       window.location.assign(preferencePayload.checkoutUrl);
@@ -83,7 +105,7 @@ export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
   return (
     <form className="checkout-layout" onSubmit={handleSubmit}>
       <div className="checkout-forms">
-        <div className="checkout-heading"><p className="section-eyebrow">Checkout sem cadastro</p><h1>Finalize seus dados.</h1><p>Não é necessário criar login. Usaremos estes dados apenas para identificar e atender o pedido.</p></div>
+        <div className="checkout-heading"><p className="section-eyebrow">Checkout flexível</p><h1>Finalize seus dados.</h1><p>Você pode comprar como convidado ou <Link href="/entrar?next=/checkout">entrar na sua conta</Link> para reunir seus pedidos pelo e-mail verificado.</p></div>
         {quoteError || submitError ? <div className="form-alert error" role="alert">{quoteError ?? submitError}</div> : null}
         <fieldset className="form-section">
           <legend><span>01</span> Seus dados</legend>

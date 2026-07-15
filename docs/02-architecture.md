@@ -43,8 +43,9 @@ opcional e endereço são snapshots do pedido, sem senha ou conta obrigatória.
 Isso reduz atrito e mantém `Customer` preparado para uma associação futura.
 
 O login do lojista entra no M4 para proteger produtos, estoque e pedidos. Uma
-conta opcional de consumidor, com histórico de compras, permanece no M7 e pode
-vincular pedidos anteriores por um processo verificado de e-mail ou telefone.
+conta opcional de consumidor, com histórico de compras, pertence ao M8. O
+histórico usa exclusivamente a identidade Supabase validada no servidor e o
+e-mail verificado, sempre limitado à loja; o checkout convidado continua ativo.
 
 No M4, o login do operador usa Supabase Auth e cookies SSR. A identidade externa
 é vinculada a `User.authUserId`; role e `storeId` continuam autoritativos no

@@ -1,6 +1,8 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { CartQuoteError } from "../../../lib/cart-quote";
-import { createPendingOrder, isInventoryReservationError } from "../../../lib/orders";
+import { createPendingOrder, isCustomerIdentityError, isInventoryReservationError } from "../../../lib/orders";
+import { getCustomerSession } from "../../../lib/customer-auth";
+import { processEmailOutbox } from "../../../lib/email/outbox";
 import { logEvent } from "../../../lib/observability/logger";
 import { checkoutRequestSchema } from "../../../storefront/checkout/contracts";
 import { enforceRateLimit, rateLimitPolicies } from "../../../lib/rate-limit";
@@ -17,7 +19,20 @@ export async function POST(request: Request) {
   }
 
   try {
-    const order = await createPendingOrder(result.data);
+    const identity = await getCustomerSession();
+    const order = await createPendingOrder(result.data, identity);
+    after(async () => {
+      try {
+        const emailResult = await processEmailOutbox();
+        logEvent("info", "order.email.trigger.completed", {
+          result: emailResult.disabled ? "disabled" : `sent:${emailResult.sent}`,
+        });
+      } catch (emailError) {
+        logEvent("error", "order.email.trigger.failed", {
+          errorName: emailError instanceof Error ? emailError.name : "UnknownError",
+        });
+      }
+    });
     return NextResponse.json({ orderId: order.id, status: order.status, totalCents: order.totalCents }, { status: 201 });
   } catch (error) {
     if (error instanceof CartQuoteError) {
@@ -28,6 +43,9 @@ export async function POST(request: Request) {
         { error: { code: "STOCK_CHANGED", message: (error as Error).message } },
         { status: 409 },
       );
+    }
+    if (isCustomerIdentityError(error)) {
+      return NextResponse.json({ error: { code: "CUSTOMER_CONFLICT", message: (error as Error).message } }, { status: 409 });
     }
     logEvent("error", "order.create.failed", {
       errorName: error instanceof Error ? error.name : "UnknownError",

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getPostgresConnectionConfig, normalizePostgresUrl } from "../../lib/database-url";
+import { getCheckoutStage } from "../../storefront/checkout/checkout-form";
 import { pvModaConfig } from "../../storefront/config/pv-moda";
 
 describe("storefront customizável", () => {
@@ -7,6 +8,13 @@ describe("storefront customizável", () => {
     expect(pvModaConfig.storeSlug).toBe("pv-moda-masculina");
     expect(pvModaConfig.theme.brand).toMatch(/^#/);
     expect(pvModaConfig.benefits).toHaveLength(3);
+  });
+
+  it("mantém o checkout em transição depois de limpar o carrinho", () => {
+    expect(getCheckoutStage({ ready: true, loading: false, itemCount: 0, submitting: true }))
+      .toBe("finalizing");
+    expect(getCheckoutStage({ ready: true, loading: false, itemCount: 0, submitting: false }))
+      .toBe("empty");
   });
 
   it("preserva TLS obrigatório e habilita validação por CA quando configurada", () => {

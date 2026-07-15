@@ -69,6 +69,10 @@ svg { display: block; }
 .service-link small { color: var(--store-muted); font-size: .67rem; }
 .service-link strong { font-size: .83rem; }
 .header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 1.1rem; }
+.account-link, .service-link { display: flex; align-items: center; gap: .55rem; color: var(--store-ink); }
+.account-link span, .service-link span { display: flex; flex-direction: column; }
+.account-link small, .service-link small { color: var(--store-muted); font-size: .54rem; font-weight: 750; }
+.account-link strong, .service-link strong { font-size: .68rem; font-weight: 900; }
 .cart-link { position: relative; display: flex; min-height: 2.8rem; align-items: center; gap: .45rem; border-left: 1px solid var(--store-line); padding-left: 1rem; font-size: .76rem; font-weight: 850; }
 .cart-link strong { display: grid; min-width: 1.35rem; aspect-ratio: 1; place-items: center; border-radius: 50%; background: var(--store-accent); color: white; font-size: .63rem; }
 .category-nav { background: var(--store-brand); color: white; }
@@ -273,8 +277,65 @@ svg { display: block; }
 
 .checkout-heading { margin-bottom: 2.5rem; }
 .checkout-heading > p:last-child { max-width: 42rem; color: var(--store-muted); line-height: 1.7; }
+.checkout-heading > p:last-child a { color: var(--store-accent-strong); font-weight: 850; text-decoration: underline; text-underline-offset: .2em; }
 .form-alert { margin-bottom: 1rem; border-radius: .8rem; padding: .9rem 1rem; font-size: .75rem; line-height: 1.5; }
 .form-alert.error { border: 1px solid #d7a59d; background: #f8e4df; color: #74352f; }
+.form-alert.success { border: 1px solid #a8c8ae; background: #edf7ef; color: #285e35; }
+
+.account-auth-page, .customer-account-page { min-height: 70svh; padding: clamp(2.5rem, 7vw, 6rem) 0; background: var(--store-paper); }
+.account-auth-grid { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) minmax(22rem, .72fr); overflow: hidden; border: 1px solid var(--store-line); border-radius: calc(var(--store-radius) * 1.25); background: var(--store-surface); box-shadow: 1rem 1rem 0 var(--store-brand-soft); }
+.account-auth-grid > * { min-width: 0; }
+.account-auth-story { position: relative; max-width: 100%; min-height: 40rem; padding: clamp(2rem, 6vw, 5rem); overflow: hidden; background: var(--store-brand); color: white; }
+.account-auth-story::after { position: absolute; width: 24rem; aspect-ratio: 1; right: -9rem; bottom: -10rem; border: 1px solid color-mix(in srgb, white 28%, transparent); border-radius: 50% 50% 18% 50%; content: ""; transform: rotate(22deg); }
+.account-auth-monogram { display: grid; width: 4.8rem; aspect-ratio: 1; place-items: center; margin-bottom: 4rem; border-radius: 50% 50% 50% 15%; background: var(--store-paper); color: var(--store-brand); font-family: Georgia, serif; font-size: 1.25rem; font-weight: 800; }
+.account-auth-story .section-eyebrow { color: #f0b48e; }
+.account-auth-story h1 { max-width: 9ch; margin: .65rem 0 1.5rem; font-family: "Iowan Old Style", Georgia, serif; font-size: clamp(3.5rem, 7vw, 6rem); font-weight: 500; letter-spacing: -.055em; line-height: .86; }
+.account-auth-story > p:not(.section-eyebrow) { max-width: 34rem; color: color-mix(in srgb, white 78%, transparent); line-height: 1.75; overflow-wrap: anywhere; }
+.account-auth-promise { position: absolute; left: clamp(2rem, 6vw, 5rem); right: clamp(2rem, 6vw, 5rem); bottom: clamp(2rem, 5vw, 4rem); z-index: 1; display: flex; max-width: 30rem; flex-direction: column; gap: .35rem; border-top: 1px solid color-mix(in srgb, white 28%, transparent); padding-top: 1.2rem; }
+.account-auth-promise strong { font-family: Georgia, serif; font-size: 1.1rem; }
+.account-auth-promise span { color: color-mix(in srgb, white 68%, transparent); font-size: .7rem; line-height: 1.55; }
+.account-auth-card { display: flex; justify-content: center; flex-direction: column; padding: clamp(2rem, 5vw, 4.5rem); }
+.account-form { display: grid; gap: 1rem; }
+.account-form-meta { display: flex; justify-content: flex-end; margin-top: -.35rem; }
+.account-form-meta a, .account-auth-aside a { color: var(--store-accent-strong); font-weight: 850; }
+.account-form-meta a { font-size: .68rem; }
+.account-divider { display: flex; align-items: center; gap: .8rem; margin: 1.3rem 0; color: var(--store-muted); font-size: .65rem; }
+.account-divider::before, .account-divider::after { height: 1px; flex: 1; background: var(--store-line); content: ""; }
+.google-button { display: flex; width: 100%; min-height: 3.35rem; align-items: center; justify-content: center; gap: .75rem; border: 1px solid var(--store-line); border-radius: 999px; background: var(--store-paper); color: var(--store-ink); cursor: pointer; font: inherit; font-size: .76rem; font-weight: 850; }
+.google-button:hover { border-color: var(--store-ink); }
+.google-button span { display: grid; width: 1.6rem; aspect-ratio: 1; place-items: center; border: 1px solid var(--store-line); border-radius: 50%; background: white; color: #356ae6; font-weight: 950; }
+.account-auth-aside { margin-top: 1.5rem; border-top: 1px solid var(--store-line); padding-top: 1.2rem; color: var(--store-muted); font-size: .72rem; text-align: center; }
+.account-auth-aside p { margin: 0; }
+.account-back-link { align-self: center; margin-top: 1.5rem; color: var(--store-muted); font-size: .66rem; }
+
+.customer-account-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; margin-bottom: 3rem; }
+.customer-account-header h1 { margin: .35rem 0; font-family: "Iowan Old Style", Georgia, serif; font-size: clamp(3.2rem, 7vw, 6rem); font-weight: 500; letter-spacing: -.055em; line-height: .9; }
+.customer-account-header > div > p:last-child { color: var(--store-muted); }
+.customer-account-grid { display: grid; grid-template-columns: minmax(16rem, .32fr) minmax(0, 1fr); align-items: start; gap: clamp(1.5rem, 4vw, 3.5rem); }
+.customer-profile-card { position: sticky; top: 1.5rem; display: flex; flex-direction: column; border: 1px solid var(--store-line); border-radius: var(--store-radius); padding: 1.6rem; background: var(--store-surface); box-shadow: .65rem .65rem 0 var(--store-brand-soft); }
+.customer-avatar { display: grid; width: 4rem; aspect-ratio: 1; place-items: center; margin-bottom: 1.2rem; border-radius: 50% 50% 50% 18%; background: var(--store-brand); color: white; font-family: Georgia, serif; font-size: 1.5rem; }
+.customer-profile-card > div { display: flex; min-width: 0; flex-direction: column; }
+.customer-profile-card small { color: var(--store-accent-strong); font-size: .57rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.customer-profile-card strong { margin: .4rem 0 .2rem; font-family: Georgia, serif; font-size: 1.4rem; }
+.customer-profile-card span:not(.customer-avatar) { overflow: hidden; color: var(--store-muted); font-size: .7rem; text-overflow: ellipsis; }
+.customer-profile-card > a { margin-top: 1.5rem; border-top: 1px solid var(--store-line); padding-top: 1rem; color: var(--store-accent-strong); font-size: .7rem; font-weight: 850; }
+.customer-profile-card > p { margin: 1.3rem 0 0; color: var(--store-muted); font-size: .65rem; line-height: 1.6; }
+.customer-orders-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+.customer-orders-heading h2 { margin: .25rem 0 0; font-family: Georgia, serif; font-size: 2.4rem; font-weight: 550; }
+.customer-orders-heading > span { color: var(--store-muted); font-size: .65rem; }
+.customer-order-list { border-top: 1px solid var(--store-line); }
+.customer-order-card { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 1.5rem; border-bottom: 1px solid var(--store-line); padding: 1.35rem 0; }
+.customer-order-card > div { display: flex; min-width: 0; flex-direction: column; gap: .25rem; }
+.customer-order-card small, .customer-order-card span { color: var(--store-muted); font-size: .65rem; }
+.customer-order-card > div:first-child strong { font-family: Georgia, serif; font-size: 1.15rem; }
+.customer-order-status > span { width: max-content; border-radius: 999px; padding: .35rem .65rem; background: var(--store-brand-soft); color: var(--store-brand); font-weight: 850; }
+.customer-order-total { align-items: flex-end; }
+.customer-order-total strong { font-family: Georgia, serif; font-size: 1.15rem; }
+.customer-order-total a { color: var(--store-accent-strong); font-size: .65rem; font-weight: 850; }
+.customer-orders-empty { display: grid; min-height: 26rem; place-items: center; align-content: center; border: 1px dashed var(--store-line); border-radius: var(--store-radius); padding: 2rem; text-align: center; }
+.customer-orders-empty > span { display: grid; width: 4rem; aspect-ratio: 1; place-items: center; border-radius: 50% 50% 50% 18%; background: var(--store-brand-soft); color: var(--store-brand); font-family: Georgia, serif; font-weight: 850; }
+.customer-orders-empty h3 { margin: 1rem 0 .4rem; font-family: Georgia, serif; font-size: 1.6rem; }
+.customer-orders-empty p { max-width: 30rem; margin: 0 0 1.4rem; color: var(--store-muted); font-size: .72rem; line-height: 1.6; }
 .form-section { margin: 0 0 1rem; border: 1px solid var(--store-line); border-radius: var(--store-radius); padding: clamp(1.25rem, 3vw, 2rem); background: var(--store-surface); }
 .form-section legend { display: flex; align-items: center; gap: .7rem; padding: 0 .5rem; font-family: Georgia, serif; font-size: 1.2rem; font-weight: 650; }
 .form-section legend span { display: grid; width: 2rem; aspect-ratio: 1; place-items: center; border-radius: 50%; background: var(--store-brand); color: white; font-family: "Avenir Next", sans-serif; font-size: .6rem; }
@@ -346,6 +407,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .product-detail-grid { grid-template-columns: 1fr; }
   .product-gallery { position: static; }
   .cart-layout, .checkout-layout, .order-success-grid { grid-template-columns: 1fr; }
+  .account-auth-grid, .customer-account-grid { grid-template-columns: 1fr; }
+  .account-auth-story { min-height: 32rem; }
+  .customer-profile-card { position: static; }
   .cart-summary, .checkout-summary { position: static; }
 }
 
@@ -355,7 +419,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .announcement-inner p { font-size: .68rem; line-height: 1.25; }
   .announcement-inner > div { display: none; }
   .header-main { grid-template-columns: 1fr auto; gap: .8rem; }
-  .brand-lockup small, .service-link span, .cart-link > span { display: none; }
+  .brand-lockup small, .service-link, .account-link span, .cart-link > span { display: none; }
+  .account-link { display: grid; width: 2.8rem; min-height: 2.8rem; place-items: center; border: 1px solid var(--store-line); border-radius: 50%; }
   .service-link { display: none; }
   .header-actions { gap: .45rem; }
   .cart-link { width: 2.8rem; min-height: 2.8rem; justify-content: center; border: 1px solid var(--store-line); border-radius: 50%; padding: 0; }
@@ -394,6 +459,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .payment-notice { grid-template-columns: auto minmax(0, 1fr); }
   .payment-notice button { grid-column: 1 / -1; }
   .payment-notice .payment-error { grid-column: 1 / -1; }
+  .account-auth-grid { box-shadow: .55rem .55rem 0 var(--store-brand-soft); }
+  .account-auth-page .store-container { width: calc(100vw - 1.25rem); max-width: calc(100vw - 1.25rem); }
+  .account-auth-grid, .account-auth-story, .account-auth-card { width: 100%; max-width: 100%; }
+  .account-auth-story { min-height: 27rem; padding: 2rem 1.5rem; }
+  .account-auth-story > p:not(.section-eyebrow), .account-auth-promise { width: calc(100vw - 4.25rem); max-width: calc(100vw - 4.25rem); }
+  .account-auth-monogram { margin-bottom: 2.5rem; }
+  .account-auth-story h1 { font-size: 3.5rem; }
+  .account-auth-promise { position: static; margin-top: 3rem; }
+  .account-auth-card { padding: 2rem 1.25rem; }
+  .customer-account-header { align-items: flex-start; flex-direction: column; }
+  .customer-account-header h1 { font-size: 3.7rem; }
+  .customer-order-card { grid-template-columns: 1fr auto; }
+  .customer-order-total { grid-column: 1 / -1; align-items: center; flex-direction: row !important; justify-content: space-between; }
 }
 
 @media (prefers-reduced-motion: reduce) {
