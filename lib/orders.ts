@@ -7,7 +7,34 @@ import {
 } from "./inventory";
 import type { CheckoutRequest } from "../storefront/checkout/contracts";
 
-export async function createPendingOrder(payload: CheckoutRequest) {
+export type OrderCustomerIdentity = { authUserId: string; email: string };
+
+type CheckoutCustomerLink = { id: string; authUserId: string | null };
+
+export class CustomerIdentityError extends Error {}
+
+export function resolveCheckoutEmail(
+  submittedEmail: string | null | undefined,
+  identity: OrderCustomerIdentity | null | undefined,
+) {
+  return identity?.email ?? (submittedEmail || null);
+}
+
+export function selectCheckoutCustomer(
+  identity: OrderCustomerIdentity | null | undefined,
+  linkedCustomer: CheckoutCustomerLink | null,
+  phoneCustomer: CheckoutCustomerLink | null,
+) {
+  if (identity && phoneCustomer?.authUserId && phoneCustomer.authUserId !== identity.authUserId) {
+    throw new CustomerIdentityError("Este telefone já está associado a outra conta.");
+  }
+  if (linkedCustomer && phoneCustomer && linkedCustomer.id !== phoneCustomer.id) {
+    throw new CustomerIdentityError("Este telefone já está associado a outro cadastro.");
+  }
+  return linkedCustomer ?? phoneCustomer;
+}
+
+export async function createPendingOrder(payload: CheckoutRequest, identity?: OrderCustomerIdentity | null) {
   const quote = await quoteCart(payload.storeSlug, payload.items, payload.deliveryMethod);
   if (quote.issues.length) {
     throw new CartQuoteError(quote.issues[0], "INVALID_ITEM");
@@ -18,17 +45,27 @@ export async function createPendingOrder(payload: CheckoutRequest) {
     const now = new Date();
     await reserveInventory(transaction, quote.storeId, quote.items);
 
-    const existingCustomer = await transaction.customer.findFirst({
-      where: { phone: payload.customer.phone },
-      orderBy: { updatedAt: "desc" },
+    const effectiveEmail = resolveCheckoutEmail(payload.customer.email, identity);
+    const linkedCustomer = identity ? await transaction.customer.findFirst({
+      where: { storeId: quote.storeId, authUserId: identity.authUserId },
+    }) : null;
+    const phoneCustomer = await transaction.customer.findFirst({
+      where: { storeId: quote.storeId, phone: payload.customer.phone }, orderBy: { updatedAt: "desc" },
     });
+    const existingCustomer = selectCheckoutCustomer(identity, linkedCustomer, phoneCustomer);
     const customer = existingCustomer
       ? await transaction.customer.update({
           where: { id: existingCustomer.id },
-          data: { name: payload.customer.name, email: payload.customer.email || null },
+          data: identity || !existingCustomer.authUserId ? {
+            name: payload.customer.name, email: effectiveEmail, phone: payload.customer.phone,
+            ...(identity ? { authUserId: identity.authUserId } : {}),
+          } : {},
         })
       : await transaction.customer.create({
-          data: { name: payload.customer.name, phone: payload.customer.phone, email: payload.customer.email || null },
+          data: {
+            storeId: quote.storeId, name: payload.customer.name, phone: payload.customer.phone,
+            email: effectiveEmail, ...(identity ? { authUserId: identity.authUserId } : {}),
+          },
         });
 
     const order = await transaction.order.create({
@@ -41,7 +78,7 @@ export async function createPendingOrder(payload: CheckoutRequest) {
         deliveryMethod: payload.deliveryMethod,
         customerName: payload.customer.name,
         customerPhone: payload.customer.phone,
-        customerEmail: payload.customer.email || null,
+        customerEmail: effectiveEmail,
         shippingZipCode: payload.deliveryMethod === "LOCAL_DELIVERY" ? payload.address?.zipCode : null,
         shippingStreet: payload.deliveryMethod === "LOCAL_DELIVERY" ? payload.address?.street : null,
         shippingNumber: payload.deliveryMethod === "LOCAL_DELIVERY" ? payload.address?.number : null,
@@ -69,7 +106,7 @@ export async function createPendingOrder(payload: CheckoutRequest) {
       select: { id: true, storeId: true, status: true, totalCents: true, createdAt: true, expiresAt: true },
     });
 
-    if (payload.customer.email) {
+    if (effectiveEmail) {
       await transaction.emailOutbox.create({
         data: {
           storeId: order.storeId,
@@ -86,4 +123,8 @@ export async function createPendingOrder(payload: CheckoutRequest) {
 
 export function isInventoryReservationError(error: unknown) {
   return error instanceof InventoryReservationError;
+}
+
+export function isCustomerIdentityError(error: unknown) {
+  return error instanceof CustomerIdentityError;
 }

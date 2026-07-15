@@ -34,6 +34,7 @@ frete nacional automatizado e emissão fiscal. O escopo detalhado está em
 - Next.js 16, React 19, TypeScript e App Router.
 - PostgreSQL com Prisma ORM.
 - Supabase para banco, autenticação administrativa e Storage.
+- Conta opcional do consumidor com e-mail/senha, recuperação, Google OAuth e histórico protegido.
 - Mercado Pago Checkout Pro.
 - Zod para contratos de entrada; Vitest e ESLint para qualidade.
 - Vercel para build e hospedagem; GitHub Actions para qualidade e operação.
@@ -77,7 +78,7 @@ versionados.
 | Supabase     | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`                              |
 | Mercado Pago | `MERCADO_PAGO_ENV`, `MERCADO_PAGO_ACCESS_TOKEN`, `NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY`, `MERCADO_PAGO_WEBHOOK_SECRET` |
 | Proteções    | `RATE_LIMIT_SECRET`, `JOB_SECRET`, `SITE_ACCESS_PASSWORD`, `SITE_ACCESS_SECRET`                                       |
-| E-mail       | `EMAIL_DRIVER`, `EMAIL_FROM`, `RESEND_API_KEY`                                                                        |
+| E-mail       | `EMAIL_DRIVER`, `EMAIL_FROM`, `RESEND_API_KEY` ou `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`  |
 | Storage      | `STORAGE_BUCKET`                                                                                                      |
 | Bootstrap    | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`, `ADMIN_ROLE`                                                           |
 
@@ -165,6 +166,7 @@ O procedimento de deploy, rollback, smoke e go-live está em
 - M6: beta publicado; domínio, restauração de backup e pedido ponta a ponta ainda
   estão abertos.
 - M7: melhorias pós-MVP e decisões comerciais em andamento.
+- M8: conta do cliente em implementação; Google depende da configuração manual do provider.
 
 As issues do GitHub são a fonte de verdade para aceite. Uma issue só deve ser
 fechada com critérios comprovados em comentário, conforme

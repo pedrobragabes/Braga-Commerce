@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { sendEmail } from "../../lib/email/driver";
+import { isEmailDriverReady, sendEmail } from "../../lib/email/driver";
 import { renderOrderEmail } from "../../lib/email/templates";
 import { EMAIL_PROCESSING_LEASE_MS, getEmailProcessingLeaseCutoff } from "../../lib/email/outbox";
 import { getOrderExpiration } from "../../lib/inventory";
@@ -9,6 +9,10 @@ import { buildPaidPeriodFilter } from "../../lib/sales-report";
 const originalEmailDriver = process.env.EMAIL_DRIVER;
 const originalEmailFrom = process.env.EMAIL_FROM;
 const originalResendApiKey = process.env.RESEND_API_KEY;
+const originalSmtpHost = process.env.SMTP_HOST;
+const originalSmtpPort = process.env.SMTP_PORT;
+const originalSmtpUser = process.env.SMTP_USER;
+const originalSmtpPass = process.env.SMTP_PASS;
 
 afterEach(() => {
   const restore = (name: string, value: string | undefined) => {
@@ -18,6 +22,10 @@ afterEach(() => {
   restore("EMAIL_DRIVER", originalEmailDriver);
   restore("EMAIL_FROM", originalEmailFrom);
   restore("RESEND_API_KEY", originalResendApiKey);
+  restore("SMTP_HOST", originalSmtpHost);
+  restore("SMTP_PORT", originalSmtpPort);
+  restore("SMTP_USER", originalSmtpUser);
+  restore("SMTP_PASS", originalSmtpPass);
   vi.unstubAllGlobals();
 });
 
@@ -93,5 +101,17 @@ describe("hardening comercial", () => {
         headers: expect.objectContaining({ "Idempotency-Key": "outbox-event-1" }),
       }),
     );
+  });
+
+  it("só habilita SMTP quando a autenticação está completa", () => {
+    process.env.EMAIL_DRIVER = "smtp";
+    process.env.EMAIL_FROM = "PV Moda <pedidos@example.test>";
+    process.env.SMTP_HOST = "smtp.gmail.com";
+    process.env.SMTP_PORT = "465";
+    process.env.SMTP_USER = "pedidos@example.test";
+    delete process.env.SMTP_PASS;
+    expect(isEmailDriverReady()).toBe(false);
+    process.env.SMTP_PASS = "app-password-for-test";
+    expect(isEmailDriverReady()).toBe(true);
   });
 });

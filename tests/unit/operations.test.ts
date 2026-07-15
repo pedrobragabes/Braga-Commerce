@@ -10,6 +10,16 @@ describe("production operations", () => {
     expect(getPublicAppUrl({ VERCEL_URL: "preview.vercel.app" })).toBe(
       "https://preview.vercel.app",
     );
+    expect(getPublicAppUrl({
+      VERCEL_ENV: "preview",
+      VERCEL_URL: "feature-preview.vercel.app",
+      VERCEL_PROJECT_PRODUCTION_URL: "store.vercel.app",
+    })).toBe("https://feature-preview.vercel.app");
+    expect(getPublicAppUrl({
+      VERCEL_ENV: "production",
+      VERCEL_URL: "deployment.vercel.app",
+      VERCEL_PROJECT_PRODUCTION_URL: "store.vercel.app",
+    })).toBe("https://store.vercel.app");
     expect(getPublicAppUrl({ NODE_ENV: "production" })).toBe("https://braga-commerce.vercel.app");
     expect(getPublicAppUrl({ NODE_ENV: "development" })).toBe("http://localhost:3000");
   });

@@ -55,8 +55,12 @@ function StoreHeader({
           <button type="submit">Buscar</button>
         </form>
         <div className="header-actions">
-          <a className="service-link" href="#contato">
+          <Link className="account-link" href="/minha-conta">
             <StoreIcon name="user" />
+            <span><small>Acesse sua área</small><strong>Minha conta</strong></span>
+          </Link>
+          <a className="service-link" href="#contato">
+            <StoreIcon name="whatsapp" />
             <span><small>Precisa de ajuda?</small><strong>Fale com a loja</strong></span>
           </a>
           <CartLink />
@@ -104,6 +108,7 @@ function StoreFooter({ store }: { store: StorefrontStore }) {
           <p>Confirme tamanho, cor e disponibilidade antes de finalizar seu atendimento.</p>
           <Link href="/trocas">Trocas e devoluções</Link>
           <Link href="/privacidade">Privacidade</Link>
+          <Link href="/minha-conta">Minha conta</Link>
         </div>
       </div>
       <div className="store-container footer-bottom">
