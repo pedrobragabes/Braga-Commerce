@@ -26,7 +26,7 @@ export default async function StoreHomePage() {
 
   return (
     <>
-      <StoreHero config={pvModaConfig} />
+      <StoreHero config={pvModaConfig} products={products} />
       <BenefitStrip config={pvModaConfig} />
       <CategorySection categories={navigation.categories} />
       <FeaturedSection products={products} />

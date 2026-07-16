@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --store-ink: #17231d;
-  --store-paper: #f5f0e7;
-  --store-surface: #fffdf8;
-  --store-accent: #d66a2f;
-  --store-accent-strong: #ad4520;
-  --store-brand: #284d3b;
-  --store-brand-soft: #dbe1c9;
-  --store-line: #cec5b5;
-  --store-muted: #756f64;
-  --store-radius: 1.25rem;
+  --store-ink: #151b18;
+  --store-paper: #f2efe8;
+  --store-surface: #fcfbf7;
+  --store-accent: #d16a32;
+  --store-accent-strong: #9e3f1f;
+  --store-brand: #173d30;
+  --store-brand-soft: #d8e0d4;
+  --store-line: #d5cec2;
+  --store-muted: #66665f;
+  --store-radius: .9rem;
 }
 
 * { box-sizing: border-box; }
@@ -19,7 +19,7 @@ body {
   margin: 0;
   background: var(--store-paper);
   color: var(--store-ink);
-  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-family: var(--font-store-body), "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 button, input { font: inherit; }
@@ -394,6 +394,122 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .payment-notice { grid-template-columns: auto minmax(0, 1fr); }
   .payment-notice button { grid-column: 1 / -1; }
   .payment-notice .payment-error { grid-column: 1 / -1; }
+}
+
+.beta-access-page,
+.not-found-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--store-brand);
+  font-family: var(--font-store-body), "Segoe UI", sans-serif;
+}
+.beta-access-page::before,
+.not-found-page::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  opacity: .16;
+  background:
+    linear-gradient(90deg, transparent calc(100% - 1px), white 0) 0 0 / 8.333% 100%,
+    linear-gradient(transparent calc(100% - 1px), white 0) 0 0 / 100% 8rem;
+  mask-image: linear-gradient(135deg, black, transparent 78%);
+}
+.beta-access-card,
+.not-found-card {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--store-line) 82%, transparent);
+  border-radius: .25rem;
+  background: var(--store-paper);
+  box-shadow: 0 2rem 6rem rgb(8 24 17 / 28%);
+}
+.beta-access-card {
+  width: min(100%, 36rem);
+  padding: clamp(1.6rem, 6vw, 4rem);
+}
+.not-found-card {
+  width: min(100%, 52rem);
+  padding: clamp(2rem, 7vw, 5.5rem);
+}
+.beta-access-mark,
+.not-found-card > span {
+  width: 3.5rem;
+  margin-bottom: 1.8rem;
+  border: 1px solid var(--store-ink);
+  border-radius: 0;
+  background: var(--store-accent);
+  color: var(--store-ink);
+  font-family: var(--font-store-body), sans-serif;
+  font-size: .75rem;
+  font-weight: 900;
+  box-shadow: none;
+}
+.beta-access-mark::after,
+.not-found-card > span::after {
+  content: "";
+  position: absolute;
+  inset: .3rem;
+  border: 1px solid currentColor;
+  opacity: .42;
+}
+.beta-access-mark,
+.not-found-card > span {
+  position: relative;
+}
+.beta-access-card h1,
+.not-found-card h1 {
+  max-width: 11ch;
+  font-family: var(--font-store-display), "Times New Roman", serif;
+  font-size: clamp(3.2rem, 8vw, 5.8rem);
+  font-weight: 500;
+  letter-spacing: -.06em;
+  line-height: .86;
+}
+.beta-access-card > p:not(.section-eyebrow),
+.not-found-card > p:not(.section-eyebrow) {
+  color: var(--store-muted);
+  font-size: .86rem;
+  line-height: 1.75;
+}
+.beta-access-card form {
+  gap: 1.1rem;
+  margin-top: 1.8rem;
+  border-top: 1px solid var(--store-line);
+  padding-top: 1.5rem;
+}
+.beta-access-card .field input {
+  min-height: 3.2rem;
+  border-color: var(--store-muted);
+  border-radius: .2rem;
+  background: var(--store-surface);
+}
+.beta-access-card .primary-button,
+.not-found-card .primary-button,
+.not-found-card .secondary-button {
+  min-height: 3.35rem;
+  border-radius: .3rem;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+.beta-access-card .primary-button {
+  background: var(--store-brand);
+}
+.not-found-card > div {
+  margin-top: 2.2rem;
+}
+
+@media (max-width: 40rem) {
+  .beta-access-page,
+  .not-found-page {
+    padding: .65rem;
+  }
+  .beta-access-card,
+  .not-found-card {
+    padding: 1.5rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
