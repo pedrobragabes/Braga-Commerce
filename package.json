@@ -35,14 +35,14 @@
     "images:smoke:cleanup": "tsx scripts/smoke-images-m5.ts cleanup"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.6.0",
-    "@prisma/client": "^7.6.0",
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
     "@supabase/ssr": "^0.12.1",
     "@supabase/supabase-js": "^2.110.3",
     "@vercel/speed-insights": "^2.0.0",
     "dotenv": "^16.6.1",
     "mercadopago": "^3.2.0",
-    "next": "^16.0.1",
+    "next": "^16.3.0",
     "pg": "^8.16.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -56,10 +56,10 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "eslint": "^9.39.1",
-    "eslint-config-next": "^16.0.1",
+    "eslint-config-next": "^16.3.0",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.1",
-    "prisma": "^7.6.0",
+    "prisma": "^7.9.1",
     "tailwindcss": "^4.1.16",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
@@ -70,15 +70,16 @@
   },
   "overrides": {
     "next": {
-      "postcss": "8.5.16"
+      "postcss": "8.5.26",
+      "sharp": "0.35.0"
     },
     "@hono/node-server": "1.19.13"
   },
   "allowScripts": {
-    "@prisma/engines@7.8.0": true,
-    "esbuild@0.28.1": true,
-    "prisma@7.8.0": true,
-    "sharp@0.34.5": true,
+    "@prisma/engines@7.9.1": true,
+    "esbuild@0.28.2": true,
+    "prisma@7.9.1": true,
+    "sharp@0.35.0": true,
     "unrs-resolver@1.12.2": true
   }
 }
