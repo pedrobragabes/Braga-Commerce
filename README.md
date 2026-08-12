@@ -52,7 +52,7 @@ e testes (`tests/`). Decisões e fluxos estão em
 ## Início rápido
 
 ```powershell
-npm install
+npm ci
 Copy-Item .env.example .env
 npm run db:up
 npm run db:migrate
