@@ -70,23 +70,24 @@ describe("Mercado Pago webhook signature", () => {
     const secret = "test-webhook-secret";
     const dataId = "123456";
     const requestId = "request-abc";
-    const timestamp = 1_720_000_000_000;
-    const manifest = `id:${dataId};request-id:${requestId};ts:${timestamp};`;
+    const timestampSeconds = 1_720_000_000;
+    const nowMs = timestampSeconds * 1000;
+    const manifest = `id:${dataId};request-id:${requestId};ts:${timestampSeconds};`;
     const signature = createHmac("sha256", secret).update(manifest).digest("hex");
     process.env.MERCADO_PAGO_WEBHOOK_SECRET = secret;
 
     expect(() => validateMercadoPagoWebhookSignature({
-      signature: `ts=${timestamp},v1=${signature}`,
+      signature: `ts=${timestampSeconds},v1=${signature}`,
       requestId,
       dataId,
-      now: () => timestamp,
+      now: () => nowMs,
     })).not.toThrow();
 
     expect(() => validateMercadoPagoWebhookSignature({
-      signature: `ts=${timestamp},v1=invalid`,
+      signature: `ts=${timestampSeconds},v1=invalid`,
       requestId,
       dataId,
-      now: () => timestamp,
+      now: () => nowMs,
     })).toThrow();
   });
 });
