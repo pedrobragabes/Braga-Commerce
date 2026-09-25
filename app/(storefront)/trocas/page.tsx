@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Trocas e devoluções | PV Moda Masculina",
-  description: "Rascunho da política de trocas, devoluções e arrependimento da PV Moda Masculina.",
+  title: "Trocas e devoluções",
+  description: "Rascunho da política de trocas, devoluções e arrependimento da loja.",
 };
 
 export default function ExchangesPage() {

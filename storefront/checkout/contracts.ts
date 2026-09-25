@@ -65,6 +65,7 @@ const addressSchema = z
 export const checkoutRequestSchema = z
   .object({
     storeSlug: storeSlugSchema,
+    accountRequired: z.boolean().optional(),
     items: z.array(cartItemSchema).min(1, "Seu carrinho está vazio.").max(50),
     customer: customerSchema,
     deliveryMethod: z.enum(["LOCAL_PICKUP", "LOCAL_DELIVERY"]),

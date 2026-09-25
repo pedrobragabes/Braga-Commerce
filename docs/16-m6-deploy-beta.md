@@ -123,6 +123,6 @@ existir evidência real:
    novo e só então divulgar a loja. Até lá, o beta continua protegido por senha.
 8. Baixar a CA de Production em **Supabase > Database Settings > SSL
    Configuration**, cadastrar o PEM como `DATABASE_SSL_CA` na Vercel e comprovar
-   uma conexão com validação de cadeia/hostname. O pooler está criptografado, mas
-   sem essa variável o processo Node ainda usa `sslmode=no-verify` por
-   compatibilidade com a cadeia do Supavisor.
+   uma conexão com validação de cadeia/hostname. A aplicação agora exige
+   validação completa: sem CA específica usa as CAs do Node; cadeia privada
+   não reconhecida falha, sem fallback no-verify. Veja `23-tenant-payment-and-database-tls.md`.

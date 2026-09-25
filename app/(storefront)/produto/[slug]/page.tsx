@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductGallery } from "../../../../storefront/components/product-gallery";
 import { VariationPicker } from "../../../../storefront/components/variation-picker";
-import { pvModaConfig } from "../../../../storefront/config/pv-moda";
+import { getRequestStoreSlug } from "../../../../lib/store-context";
 import { getProductBySlug, getStoreNavigation } from "../../../../storefront/data";
 import { formatCurrency } from "../../../../storefront/format";
 
@@ -11,7 +11,7 @@ type ProductPageProps = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getProductBySlug(pvModaConfig.storeSlug, slug);
+  const product = await getProductBySlug(await getRequestStoreSlug(), slug);
   const image = product?.images[0]?.url;
   return {
     title: product?.name ?? "Produto",
@@ -30,8 +30,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const [product, navigation] = await Promise.all([
-    getProductBySlug(pvModaConfig.storeSlug, slug),
-    getStoreNavigation(pvModaConfig.storeSlug),
+    getProductBySlug(await getRequestStoreSlug(), slug),
+    getStoreNavigation(await getRequestStoreSlug()),
   ]);
 
   if (!product || !navigation) notFound();
@@ -53,7 +53,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             productName={product.name}
           />
           <div className="product-detail-copy">
-            <p className="section-eyebrow">{product.category?.name ?? "PV Moda"}</p>
+            <p className="section-eyebrow">{product.category?.name ?? "Produtos"}</p>
             <h1>{product.name}</h1>
             <p className="product-detail-summary">{product.shortDescription}</p>
             <div className="base-price">

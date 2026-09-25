@@ -1,4 +1,4 @@
-import type { FulfillmentStatus, UserRole } from "../generated/prisma/client";
+import type { DeliveryMethod, FulfillmentStatus, InventoryStatus, PaymentStatus, UserRole } from "../generated/prisma/client";
 import type { AdminPermission } from "./admin-auth";
 import { can } from "./admin-auth";
 
@@ -19,6 +19,28 @@ export function allowedFulfillmentTargets(current: FulfillmentStatus) {
   return [current, ...fulfillmentTransitions[current]];
 }
 
+type OrderOperationState = {
+  fulfillmentStatus: FulfillmentStatus;
+  paymentStatus: PaymentStatus;
+  inventoryStatus: InventoryStatus;
+  deliveryMethod: DeliveryMethod;
+};
+
+export function canOperateOrder(order: OrderOperationState, next: FulfillmentStatus) {
+  if (!canTransitionFulfillment(order.fulfillmentStatus, next)) return false;
+  if (next === order.fulfillmentStatus) return true;
+  if (order.inventoryStatus === "REQUIRES_REVIEW") return false;
+  if (next === "CANCELLED") return true;
+  if (order.paymentStatus !== "PAID" || order.inventoryStatus !== "COMMITTED") return false;
+  if (next === "READY_FOR_PICKUP" && order.deliveryMethod !== "LOCAL_PICKUP") return false;
+  if (next === "SHIPPED" && order.deliveryMethod === "LOCAL_PICKUP") return false;
+  return true;
+}
+
+export function allowedOrderFulfillmentTargets(order: OrderOperationState) {
+  return allowedFulfillmentTargets(order.fulfillmentStatus).filter((next) => canOperateOrder(order, next));
+}
+
 export function visibleAdminSections(role: UserRole) {
   const sections: Array<{ href: string; label: string; permission: AdminPermission }> = [
     { href: "/admin", label: "Visão geral", permission: "dashboard:read" },
@@ -27,6 +49,8 @@ export function visibleAdminSections(role: UserRole) {
     { href: "/admin/pedidos", label: "Pedidos", permission: "orders:read" },
     { href: "/admin/relatorios", label: "Relatórios", permission: "orders:read" },
     { href: "/admin/configuracoes", label: "Configurações", permission: "settings:write" },
+    { href: "/admin/tema", label: "Apresentação", permission: "settings:write" },
+    { href: "/admin/integracoes", label: "Integrações", permission: "settings:write" },
   ];
   return sections.filter((section) => can(role, section.permission));
 }

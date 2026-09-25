@@ -10,9 +10,15 @@ import { StoreIcon } from "../components/icons";
 import { formatCurrency } from "../format";
 import type { CheckoutDeliveryMethod, CheckoutSettings } from "./contracts";
 
-type CheckoutFormProps = { storeSlug: string; settings: CheckoutSettings };
+type CheckoutFormProps = { storeSlug: string; settings: CheckoutSettings; identity?: { name: string; email: string } | null };
 
-export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
+export function getCheckoutStage({ ready, loading, itemCount, submitting }: { ready: boolean; loading: boolean; itemCount: number; submitting: boolean }) {
+  if (submitting && itemCount === 0) return "finalizing";
+  if (!ready || loading) return "loading";
+  return itemCount ? "form" : "empty";
+}
+
+export function CheckoutForm({ storeSlug, settings, identity }: CheckoutFormProps) {
   const router = useRouter();
   const { items, ready, clearCart } = useCart();
   const { quote, error: quoteError, loading } = useCartQuote(storeSlug);
@@ -23,8 +29,10 @@ export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  if (!ready || loading) return <div className="cart-loading">Preparando checkout…</div>;
-  if (!items.length) {
+  const stage = getCheckoutStage({ ready, loading, itemCount: items.length, submitting });
+  if (stage === "finalizing") return <div className="cart-loading">Finalizando seu pedido…</div>;
+  if (stage === "loading") return <div className="cart-loading">Preparando checkout…</div>;
+  if (stage === "empty") {
     return (
       <div className="checkout-empty">
         <h1>Seu carrinho está vazio.</h1>
@@ -63,6 +71,7 @@ export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           storeSlug,
+          accountRequired: Boolean(identity),
           items,
           customer: {
             name: String(formData.get("name") ?? ""),
@@ -77,15 +86,22 @@ export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
       const payload = await response.json();
       if (!response.ok)
         throw new Error(payload.error?.message ?? "Não foi possível criar o pedido.");
-      clearCart();
-      const preferenceResponse = await fetch("/api/payments/mercadopago/preference", {
+      let preferenceResponse: Response;
+      try {
+        preferenceResponse = await fetch("/api/payments/mercadopago/preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId: payload.orderId }),
-      });
-      const preferencePayload = await preferenceResponse.json();
-      if (!preferenceResponse.ok) {
-        router.push(`/pedido/${payload.orderId}?payment=unavailable`);
+        });
+      } catch {
+        clearCart();
+        router.replace(`/pedido/${payload.orderId}?payment=unavailable`);
+        return;
+      }
+      const preferencePayload = await preferenceResponse.json().catch(() => null);
+      clearCart();
+      if (!preferenceResponse.ok || !preferencePayload?.checkoutUrl) {
+        router.replace(`/pedido/${payload.orderId}?payment=unavailable`);
         return;
       }
       window.location.assign(preferencePayload.checkoutUrl);
@@ -102,11 +118,10 @@ export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
       <div className="checkout-forms">
         <CommerceProgress current={2} />
         <div className="checkout-heading">
-          <p className="section-eyebrow">Checkout sem cadastro</p>
+          <p className="section-eyebrow">{identity ? "Compra com sua conta" : "Checkout como convidado"}</p>
           <h1>Finalize seus dados.</h1>
           <p>
-            Não é necessário criar login. Usaremos estes dados apenas para identificar e atender o
-            pedido.
+            {identity ? <>Pedido vinculado à sua conta {identity.email} nesta loja.</> : <>Você pode comprar como convidado ou <Link href="/entrar?next=/checkout">entrar na sua conta</Link> para acompanhar o pedido.</>}
           </p>
         </div>
         {quoteError || submitError ? (
@@ -121,7 +136,7 @@ export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
           <div className="field-grid">
             <label className="field full">
               <span>Nome completo</span>
-              <input autoComplete="name" minLength={2} name="name" required />
+              <input autoComplete="name" minLength={2} name="name" required defaultValue={identity?.name} />
             </label>
             <label className="field">
               <span>Telefone / WhatsApp</span>
@@ -129,9 +144,9 @@ export function CheckoutForm({ storeSlug, settings }: CheckoutFormProps) {
             </label>
             <label className="field">
               <span>
-                E-mail <small>opcional</small>
+                E-mail <small>{identity ? "verificado pela sua conta" : "opcional"}</small>
               </span>
-              <input autoComplete="email" name="email" type="email" />
+              <input autoComplete="email" name="email" type="email" readOnly={Boolean(identity)} defaultValue={identity?.email} />
             </label>
           </div>
         </fieldset>

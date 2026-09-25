@@ -3,7 +3,7 @@ const SKELETON_CARDS = Array.from({ length: 6 }, (_, index) => index);
 export default function StorefrontLoading() {
   return (
     <section aria-busy="true" className="catalog-page storefront-skeleton">
-      <div aria-label="Carregando a vitrine da PV Moda" className="store-container" role="status">
+      <div aria-label="Carregando a loja" className="store-container" role="status">
         <header aria-hidden="true" className="storefront-skeleton__header">
           <span className="storefront-skeleton__eyebrow" />
           <span className="storefront-skeleton__title" />

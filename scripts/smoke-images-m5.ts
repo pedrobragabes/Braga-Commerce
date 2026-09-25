@@ -4,6 +4,7 @@ import { getDatabase } from "../lib/database";
 import { createStorageAdminClient } from "../lib/storage/admin";
 import { getStorageBucketName, MAX_PRODUCT_IMAGE_BYTES } from "../lib/storage/config";
 import { removeStoredProductImage } from "../lib/storage/product-images";
+import { processStorageDeletions } from "../lib/storage/deletion-outbox";
 import { getSupabasePublicConfig } from "../lib/supabase/config";
 
 const command = process.argv[2];
@@ -19,7 +20,7 @@ if (!runId || !/^[a-z0-9-]{6,40}$/.test(runId)) {
   throw new Error("Configure M5_SMOKE_RUN_ID com 6 a 40 caracteres seguros.");
 }
 
-async function createSessionCookieHeader(email: string | undefined, password: string | undefined) {
+async function createSessionCookieHeader(email: string | undefined, password: string | undefined, identity?: (id: string) => void) {
   if (!email || !password) throw new Error("Configure as credenciais temporárias do smoke M5.");
   const cookieJar: Array<{ name: string; value: string }> = [];
   const { url, publishableKey } = getSupabasePublicConfig();
@@ -36,8 +37,9 @@ async function createSessionCookieHeader(email: string | undefined, password: st
       },
     },
   });
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw new Error("A sessão temporária do smoke M5 não foi criada.");
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !data.user) throw new Error("A sessão temporária do smoke M5 não foi criada.");
+  identity?.(data.user.id);
   return cookieJar.map(({ name, value }) => `${name}=${value}`).join("; ");
 }
 
@@ -147,16 +149,19 @@ async function setup() {
 
 async function cleanup() {
   const database = getDatabase();
+  let authUserId = "";
+  await createSessionCookieHeader(ownerEmail, ownerPassword, (id) => { authUserId = id; });
+  const owner = await database.user.findFirst({ where: { authUserId, store: { slug: storeSlug }, isActive: true, role: { in: ["OWNER", "ADMIN"] } } });
+  if (!owner) throw new Error("Operador do smoke não autorizado nesta loja.");
   const images = await database.productImage.findMany({
-    where: { alt: { startsWith: `M5 ${runId} ` } },
-    select: { id: true, storagePath: true },
+    where: { product: { storeId: owner.storeId }, alt: { startsWith: `M5 ${runId} ` } },
+    select: { id: true, productId: true, storagePath: true },
   });
   const paths = images.flatMap((image) => (image.storagePath ? [image.storagePath] : []));
-  if (paths.length) {
-    const { error } = await createStorageAdminClient().storage.from(getStorageBucketName()).remove(paths);
-    if (error) throw new Error("A limpeza dos objetos do smoke M5 falhou.");
-  }
-  await database.productImage.deleteMany({ where: { id: { in: images.map((image) => image.id) } } });
+  for (const image of images) await removeStoredProductImage({ userId: owner.id, storeId: owner.storeId, productId: image.productId, imageId: image.id });
+  const jobs = await database.storageDeletionJob.findMany({ where: { imageId: { in: images.map((image) => image.id) }, storeId: owner.storeId }, select: { id: true } });
+  await processStorageDeletions(undefined, 50, jobs.map((job) => job.id));
+  if (await database.storageDeletionJob.count({ where: { id: { in: jobs.map((job) => job.id) }, status: { not: "COMPLETED" } } })) throw new Error("A limpeza ficou pendente para retry no journal.");
   const remaining = await database.productImage.count({ where: { alt: { startsWith: `M5 ${runId} ` } } });
   if (remaining !== 0) throw new Error("A limpeza do smoke M5 deixou referências no banco.");
   console.info(JSON.stringify({ cleaned: true, objects: paths.length, references: images.length }));
@@ -173,7 +178,8 @@ async function verify() {
   });
   if (!product) throw new Error("Produto do smoke M5 não encontrado.");
 
-  const ownerCookie = await createSessionCookieHeader(ownerEmail, ownerPassword);
+  let ownerAuthUserId = "";
+  const ownerCookie = await createSessionCookieHeader(ownerEmail, ownerPassword, (id) => { ownerAuthUserId = id; });
   const staffCookie = await createSessionCookieHeader(staffEmail, staffPassword);
   const [ownerPage, staffPage] = await Promise.all([
     fetch(`${baseUrl}/admin/produtos/${product.id}`, { headers: { cookie: ownerCookie } }),
@@ -197,7 +203,11 @@ async function verify() {
   }
   const removed = images.find((image) => image.alt === `M5 ${runId} primeira`);
   if (!removed?.storagePath) throw new Error("A imagem a remover não possui caminho de Storage.");
-  await removeStoredProductImage({ storeId: product.storeId, productId: product.id, imageId: removed.id });
+  const owner = await database.user.findFirst({ where: { authUserId: ownerAuthUserId, storeId: product.storeId, isActive: true, role: { in: ["OWNER", "ADMIN"] } } });
+  if (!owner) throw new Error("Operador do smoke não autorizado nesta loja.");
+  await removeStoredProductImage({ userId: owner.id, storeId: product.storeId, productId: product.id, imageId: removed.id });
+  const job = await database.storageDeletionJob.findUniqueOrThrow({ where: { imageId: removed.id } });
+  await processStorageDeletions(undefined, 1, [job.id]);
 
   const slash = removed.storagePath.lastIndexOf("/");
   const folder = removed.storagePath.slice(0, slash);

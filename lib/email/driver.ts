@@ -1,3 +1,6 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+
 type EmailMessage = { to: string; subject: string; text: string; html: string; eventId: string };
 
 export function getEmailDriverName() {
@@ -16,7 +19,14 @@ export function isEmailDriverReady() {
 export async function sendEmail(message: EmailMessage) {
   const driver = getEmailDriverName();
   if (driver === "development" && process.env.NODE_ENV !== "production") {
-    console.info(JSON.stringify({ event: "email.development.accepted", eventId: message.eventId }));
+    if (!/^[a-zA-Z0-9_-]{1,100}$/.test(message.eventId)) throw new Error("EMAIL_EVENT_INVALID");
+    const directory = join(process.cwd(), ".local", "email-capture");
+    await mkdir(directory, { recursive: true });
+    try {
+      await writeFile(join(directory, `${message.eventId}.json`), JSON.stringify(message, null, 2), { flag: "wx", mode: 0o600 });
+    } catch (error) {
+      if (!(error && typeof error === "object" && "code" in error && error.code === "EEXIST")) throw new Error("EMAIL_CAPTURE_FAILED");
+    }
     return;
   }
   if (driver !== "resend") throw new Error("EMAIL_DRIVER_UNAVAILABLE");

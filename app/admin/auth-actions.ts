@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { resolveSignedInOperator } from "../../lib/admin-auth";
+import { getDatabase } from "../../lib/database";
 import { createSupabaseServerClient } from "../../lib/supabase/server";
 import {
   checkRateLimitIdentifier,
@@ -47,6 +48,8 @@ export async function loginAdmin(formData: FormData) {
 
   const operator = await resolveSignedInOperator(data.user);
   if (!operator) {
+    const memberships = await getDatabase().user.count({ where: { authUserId: data.user.id, isActive: true } });
+    if (memberships) redirect("/admin/selecionar-loja");
     await supabase.auth.signOut();
     redirect("/admin/login?error=unauthorized");
   }

@@ -17,7 +17,7 @@ export function ProductCard({ product }: { product: StorefrontProduct }) {
         />
       </Link>
       <div className="product-card-copy">
-        <p className="product-category">{product.category?.name ?? "PV Moda"}</p>
+        <p className="product-category">{product.category?.name ?? "Produtos"}</p>
         <h3><Link href={`/produto/${product.slug}`}>{product.name}</Link></h3>
         <p className="product-summary">{product.shortDescription}</p>
         <div className="price-row">

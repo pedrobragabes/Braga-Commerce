@@ -1,5 +1,10 @@
 # Ponte com ComércioBES
 
+> Atualização de 25/09/2026: o prompt mestre atual inclui loja paga assistida e
+> isolamento entre lojas. O adiamento genérico deste documento é histórico.
+> O contrato read-only implementado e sua prova HTTP estão em
+> `22-directory-bridge-v1.md`; tema/provisionamento em `21-assisted-store-lifecycle.md`.
+
 ## Decisão
 
 O **Braga Commerce** é a referência do módulo de loja online reutilizável. Ele não será fundido ao ComércioBES neste momento.

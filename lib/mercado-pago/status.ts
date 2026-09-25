@@ -25,13 +25,13 @@ export function shouldApplyPaymentTransition(
   samePayment: boolean,
 ) {
   if (currentStatus === "REFUNDED") return false;
-  if (currentStatus === "PAID") return nextStatus === "REFUNDED";
+  if (currentStatus === "PAID") return samePayment && nextStatus === "REFUNDED";
   if (samePayment && (currentStatus === "FAILED" || currentStatus === "CANCELLED") && nextStatus === "WAITING_PAYMENT") {
     return false;
   }
   return currentStatus !== nextStatus;
 }
 
-export function buildPaymentEventKey(paymentId: string, providerStatus: string) {
-  return `mercadopago:${paymentId}:${providerStatus}`;
+export function buildPaymentEventKey(paymentId: string, providerStatus: string, accountKey?: string) {
+  return `mercadopago:${accountKey ? `${accountKey}:` : ""}${paymentId}:${providerStatus}`;
 }

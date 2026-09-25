@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacidade | PV Moda Masculina",
-  description: "Rascunho do aviso de privacidade da PV Moda Masculina.",
+  title: "Privacidade",
+  description: "Rascunho do aviso de privacidade da loja.",
 };
 
 export default function PrivacyPage() {

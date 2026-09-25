@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { CommerceProgress } from "../../../../storefront/components/commerce-progress";
 import { StoreIcon } from "../../../../storefront/components/icons";
 import { PaymentStatusNotice } from "../../../../storefront/checkout/payment-status-notice";
-import { pvModaConfig } from "../../../../storefront/config/pv-moda";
+import { getRequestStoreSlug } from "../../../../lib/store-context";
 import { getPublicOrder, getStoreNavigation } from "../../../../storefront/data";
 import { formatCurrency, normalizeWhatsapp } from "../../../../storefront/format";
 
@@ -23,8 +23,8 @@ export default async function OrderPage({
   const { id } = await params;
   const { payment } = await searchParams;
   const [order, navigation] = await Promise.all([
-    getPublicOrder(pvModaConfig.storeSlug, id),
-    getStoreNavigation(pvModaConfig.storeSlug),
+    getPublicOrder(await getRequestStoreSlug(), id),
+    getStoreNavigation(await getRequestStoreSlug(), true),
   ]);
   if (!order || !navigation) notFound();
 
@@ -40,7 +40,7 @@ export default async function OrderPage({
             <StoreIcon name="check" size={38} />
           </span>
           <p className="section-eyebrow">Pedido recebido</p>
-          <h1>Agora é com a PV Moda.</h1>
+          <h1>Pedido recebido pela loja.</h1>
           <p>
             Seu pedido está salvo. A confirmação do pagamento e o andamento da retirada ou entrega
             aparecerão aqui.

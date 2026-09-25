@@ -7,7 +7,8 @@ updates:
       day: monday
       time: "09:00"
       timezone: America/Sao_Paulo
-    open-pull-requests-limit: 5
+    # WIP consolidation: version updates will be reviewed directly on main.
+    open-pull-requests-limit: 0
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -15,4 +16,4 @@ updates:
       day: monday
       time: "09:30"
       timezone: America/Sao_Paulo
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0

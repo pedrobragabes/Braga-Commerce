@@ -5,6 +5,7 @@ import { can, getAdminSession } from "../../../lib/admin-auth";
 import { getDatabase } from "../../../lib/database";
 import { createStorageAdminClient } from "../../../lib/storage/admin";
 import { getStorageBucketName } from "../../../lib/storage/config";
+import { finishImageUpload, prepareImageUpload } from "../../../lib/storage/deletion-outbox";
 import {
   ProductImageValidationError,
   readValidatedProductImage,
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
     const image = await readValidatedProductImage(file);
     const bucket = getStorageBucketName();
     const storagePath = `${session.storeId}/${product.id}/${randomUUID()}.${image.extension}`;
+    const cleanup = await prepareImageUpload(session, { productId: product.id, bucket, storagePath });
     const storage = createStorageAdminClient();
     const { error: uploadError } = await storage.storage
       .from(bucket)
@@ -57,23 +59,11 @@ export async function POST(request: Request) {
 
     const { data: publicUrl } = storage.storage.from(bucket).getPublicUrl(storagePath);
     try {
-      const highestOrder = await database.productImage.aggregate({
-        where: { productId: product.id },
-        _max: { sortOrder: true },
-      });
-      const record = await database.productImage.create({
-        data: {
-          productId: product.id,
-          url: publicUrl.publicUrl,
-          storagePath,
-          alt: altValue || null,
-          sortOrder: (highestOrder._max.sortOrder ?? -1) + 1,
-        },
-        select: { id: true, url: true, alt: true, sortOrder: true },
-      });
+      const record = await finishImageUpload(session, { jobId: cleanup.id, productId: product.id, url: publicUrl.publicUrl, alt: altValue || null });
       return NextResponse.json({ url: record.url, image: record }, { status: 201 });
     } catch {
-      await storage.storage.from(bucket).remove([storagePath]);
+      // The already-persisted cleanup job owns compensation, even if the DB
+      // remains unavailable or this request/process dies before responding.
       return errorResponse(
         500,
         "IMAGE_PERSISTENCE_FAILED",

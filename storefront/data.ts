@@ -60,10 +60,10 @@ function mapStore(store: StorefrontStore): StorefrontStore {
   return store;
 }
 
-export const getStoreNavigation = cache(async (storeSlug: string) => {
+export const getStoreNavigation = cache(async (storeSlug: string, includeInactive = false) => {
   const database = getDatabase();
   const store = await database.store.findUnique({
-    where: { slug: storeSlug },
+    where: { slug: storeSlug, ...(includeInactive ? {} : { isActive: true }) },
     select: {
       id: true,
       name: true,
@@ -105,7 +105,7 @@ export const getStoreNavigation = cache(async (storeSlug: string) => {
 export const getFeaturedProducts = cache(async (storeSlug: string) => {
   const database = getDatabase();
   const products = await database.product.findMany({
-    where: { store: { slug: storeSlug }, isActive: true, isFeatured: true },
+    where: { store: { slug: storeSlug, isActive: true }, isActive: true, isFeatured: true },
     orderBy: { createdAt: "asc" },
     take: 6,
     include: productInclude,
@@ -122,7 +122,7 @@ export async function getCatalogProducts(
   const query = filters.query?.trim();
   const products = await database.product.findMany({
     where: {
-      store: { slug: storeSlug },
+      store: { slug: storeSlug, isActive: true },
       isActive: true,
       ...(filters.categorySlug ? { category: { slug: filters.categorySlug } } : {}),
       ...(query
@@ -144,7 +144,7 @@ export async function getCatalogProducts(
 export const getProductBySlug = cache(async (storeSlug: string, productSlug: string) => {
   const database = getDatabase();
   const product = await database.product.findFirst({
-    where: { store: { slug: storeSlug }, slug: productSlug, isActive: true },
+    where: { store: { slug: storeSlug, isActive: true }, slug: productSlug, isActive: true },
     include: productInclude,
   });
 
@@ -155,12 +155,12 @@ export const getSitemapEntries = cache(async (storeSlug: string) => {
   const database = getDatabase();
   const [categories, products] = await Promise.all([
     database.category.findMany({
-      where: { store: { slug: storeSlug }, isActive: true },
+      where: { store: { slug: storeSlug, isActive: true }, isActive: true },
       orderBy: { sortOrder: "asc" },
       select: { slug: true, updatedAt: true },
     }),
     database.product.findMany({
-      where: { store: { slug: storeSlug }, isActive: true },
+      where: { store: { slug: storeSlug, isActive: true }, isActive: true },
       orderBy: { name: "asc" },
       select: { slug: true, updatedAt: true },
     }),

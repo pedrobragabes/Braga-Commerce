@@ -144,6 +144,12 @@
 .admin-inline-form.variant { grid-template-columns: 1.5fr 1.2fr .7fr .8fr .8fr .65fr auto auto; }
 .admin-inline-form.category { grid-template-columns: 1fr 1fr 1.5fr .45fr auto auto auto; }
 .admin-inline-form.new { margin-top: 1rem; border: 1px dashed var(--admin-line); padding: 1rem; background: #fffdf8; }
+.admin-stock-adjustment { margin: 1rem 0; border-left: 3px solid var(--admin-moss); padding: 1rem; background: #f4f7f1; }
+.admin-stock-adjustment p { font-size: .8rem; line-height: 1.6; }
+.admin-stock-adjustment > button { margin-top: 1rem; }
+.admin-stock-history { padding-left: 1.2rem; }
+.admin-stock-history li { margin-bottom: 1rem; overflow-wrap: anywhere; }
+.admin-stock-history small { display: block; margin-top: .25rem; color: var(--admin-muted); }
 .admin-inline-form label.grow { min-width: 12rem; }
 .admin-inline-form label.small { max-width: 5rem; }
 .admin-inline-form .check { align-items: center; justify-content: center; flex-direction: row; padding-bottom: .7rem; font-size: .61rem; }

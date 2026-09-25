@@ -1,6 +1,7 @@
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import type { UserRole } from "../generated/prisma/client";
 import { getDatabase } from "./database";
 import { createSupabaseServerClient } from "./supabase/server";
@@ -35,6 +36,7 @@ export type AdminSession = {
   storeId: string;
   storeName: string;
   storeSlug: string;
+  storeDomain?: string | null;
   name: string;
   email: string;
   role: UserRole;
@@ -46,7 +48,7 @@ export function can(role: UserRole, permission: AdminPermission) {
 
 async function resolveOperator(authUser: SupabaseUser): Promise<AdminSession | null> {
   const database = getDatabase();
-  const operator = await database.user.findFirst({
+  const operators = await database.user.findMany({
     where: {
       isActive: true,
       authUserId: authUser.id,
@@ -58,11 +60,13 @@ async function resolveOperator(authUser: SupabaseUser): Promise<AdminSession | n
       name: true,
       email: true,
       role: true,
-      store: { select: { name: true, slug: true, isActive: true } },
+      store: { select: { name: true, slug: true, domain: true, isActive: true } },
     },
   });
 
-  if (!operator?.store.isActive) return null;
+  const selectedStore = operators.length > 1 ? (await cookies()).get("braga-admin-store")?.value : null;
+  const operator = operators.length === 1 ? operators[0] : operators.find((candidate) => candidate.storeId === selectedStore);
+  if (!operator) return null;
 
   return {
     authUserId: authUser.id,
@@ -70,6 +74,7 @@ async function resolveOperator(authUser: SupabaseUser): Promise<AdminSession | n
     storeId: operator.storeId,
     storeName: operator.store.name,
     storeSlug: operator.store.slug,
+    storeDomain: operator.store.domain,
     name: operator.name,
     email: operator.email,
     role: operator.role,
@@ -85,7 +90,7 @@ export const getAdminSession = cache(async (): Promise<AdminSession | null> => {
 
 export async function requireAdminSession(permission?: AdminPermission) {
   const session = await getAdminSession();
-  if (!session) redirect("/admin/login");
+  if (!session) redirect("/admin/selecionar-loja");
   if (permission && !can(session.role, permission)) redirect("/admin?forbidden=1");
   return session;
 }

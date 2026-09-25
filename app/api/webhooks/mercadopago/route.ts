@@ -25,6 +25,7 @@ export async function POST(request: Request) {
   const requestUrl = new URL(request.url);
   const dataId = requestUrl.searchParams.get("data.id");
   const requestId = request.headers.get("x-request-id");
+  const accountKey = requestUrl.searchParams.get("account") ?? undefined;
 
   if (!dataId || !/^\d{1,32}$/.test(dataId) || (requestId?.length ?? 0) > 200) {
     return NextResponse.json({ error: { code: "DATA_ID_MISSING" } }, { status: 400 });
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
       signature: request.headers.get("x-signature"),
       requestId,
       dataId,
+      accountKey,
     });
   } catch (error) {
     if (error instanceof InvalidWebhookSignatureError) {
@@ -64,6 +66,7 @@ export async function POST(request: Request) {
       dataId,
       requestId,
       parsedBody.data.action ?? parsedBody.data.type,
+      accountKey,
     );
     logEvent("info", "mercado_pago.webhook.processed", {
       requestId,

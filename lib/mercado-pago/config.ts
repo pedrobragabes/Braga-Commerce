@@ -1,16 +1,9 @@
 import { MercadoPagoConfig } from "mercadopago";
+import { paymentAccountByKey, type PaymentAccount } from "./accounts";
+import { MercadoPagoIntegrationError } from "./errors";
+export { MercadoPagoIntegrationError } from "./errors";
 
 export { getPublicAppUrl } from "../app-url";
-
-export class MercadoPagoIntegrationError extends Error {
-  constructor(
-    message: string,
-    public readonly code: string,
-    public readonly status = 500,
-  ) {
-    super(message);
-  }
-}
 
 export type MercadoPagoEnvironment = "sandbox" | "production";
 
@@ -25,29 +18,12 @@ export function getMercadoPagoEnvironment(): MercadoPagoEnvironment {
   return environment;
 }
 
-export function getMercadoPagoClient() {
-  const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
-  if (!accessToken) {
-    throw new MercadoPagoIntegrationError(
-      "Pagamento online ainda não foi configurado.",
-      "PAYMENT_NOT_CONFIGURED",
-      503,
-    );
-  }
-
-  return new MercadoPagoConfig({ accessToken, options: { timeout: 8_000 } });
+export function getMercadoPagoClient(account: PaymentAccount = paymentAccountByKey()) {
+  return new MercadoPagoConfig({ accessToken: account.accessToken, options: { timeout: 8_000 } });
 }
 
-export function getMercadoPagoWebhookSecret() {
-  const secret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
-  if (!secret) {
-    throw new MercadoPagoIntegrationError(
-      "Assinatura do webhook ainda não foi configurada.",
-      "WEBHOOK_NOT_CONFIGURED",
-      503,
-    );
-  }
-  return secret;
+export function getMercadoPagoWebhookSecret(accountKey?: string) {
+  return paymentAccountByKey(accountKey).webhookSecret;
 }
 
 export function assertMercadoPagoCheckoutUrl(rawUrl: string | undefined) {
@@ -64,7 +40,7 @@ export function assertMercadoPagoCheckoutUrl(rawUrl: string | undefined) {
     || url.hostname.endsWith(".mercadopago.com")
     || url.hostname === "mercadopago.com.br"
     || url.hostname.endsWith(".mercadopago.com.br");
-  if (url.protocol !== "https:" || !allowedHost) {
+  if (url.protocol !== "https:" || !allowedHost || url.username || url.password) {
     throw new MercadoPagoIntegrationError(
       "O provedor retornou uma URL de pagamento inválida.",
       "UNSAFE_CHECKOUT_URL",

@@ -34,7 +34,7 @@ function BrandMark({ store, inverse = false }: { store: StorefrontStore; inverse
           : undefined
       }
     >
-      {store.logoUrl ? null : "PV"}
+      {store.logoUrl ? null : store.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("")}
     </span>
   );
 }
@@ -53,7 +53,7 @@ function StoreHeader({
 
   return (
     <header className="store-header">
-      <div className="announcement-bar">
+      <div className="announcement-bar" hidden={!config.announcement}>
         <div className="store-container announcement-inner">
           <p>
             <span aria-hidden="true" className="announcement-dot" />
@@ -94,8 +94,9 @@ function StoreHeader({
           <button type="submit">Buscar</button>
         </form>
         <div className="header-actions">
+          <Link className="account-link" href="/minha-conta" aria-label="Minha conta"><StoreIcon name="user" /><span>Minha conta</span></Link>
           <a className="service-link" href="#contato">
-            <StoreIcon name="user" />
+            <StoreIcon name="whatsapp" />
             <span>
               <small>Precisa de ajuda?</small>
               <strong>Fale com a loja</strong>
@@ -107,7 +108,7 @@ function StoreHeader({
       <nav aria-label="Categorias da loja" className="category-nav">
         <div className="store-container nav-inner">
           <Link href="/">Novidades</Link>
-          <Link href="/produtos">Coleção completa</Link>
+          <Link href="/produtos">Todos os produtos</Link>
           {categories.map((category) => (
             <Link href={`/categoria/${category.slug}`} key={category.id}>
               {category.name}
@@ -126,7 +127,7 @@ function StoreFooter({ store, config }: { store: StorefrontStore; config: Storef
   return (
     <footer className="store-footer" id="contato">
       <div className="store-container footer-intro">
-        <p className="section-eyebrow">Vista local. Escolha pessoal.</p>
+        <p className="section-eyebrow">Atendimento local. Escolha pessoal.</p>
         <h2>{config.story.title}</h2>
         {whatsapp ? (
           <a
@@ -160,12 +161,13 @@ function StoreFooter({ store, config }: { store: StorefrontStore; config: Storef
           ) : (
             <span>WhatsApp em configuração</span>
           )}
+          {config.presentation?.socialLinks.map((link) => <a key={link.network} href={link.url} target="_blank" rel="noopener noreferrer">{link.network}</a>)}
           {store.email ? <a href={`mailto:${store.email}`}>{store.email}</a> : null}
           {address ? <span>{address}</span> : <span>Consulte retirada e entrega com a loja</span>}
         </div>
         <div>
           <h3>Compra consciente</h3>
-          <p>Confirme tamanho, cor e disponibilidade antes de finalizar seu atendimento.</p>
+          <p>Confira as informações e disponibilidade antes de finalizar seu atendimento.</p>
           <Link href="/trocas">Trocas e devoluções</Link>
           <Link href="/privacidade">Privacidade</Link>
         </div>
@@ -196,19 +198,22 @@ export function StorefrontFrame({
   categories,
   config,
   children,
+  commerceEnabled = true,
 }: {
   store: StorefrontStore;
   categories: StorefrontCategory[];
   config: StorefrontConfig;
   children: ReactNode;
+  commerceEnabled?: boolean;
 }) {
   return (
     <CartProvider storeSlug={store.slug}>
-      <div className="storefront" style={themeVariables(config)}>
+      <div className="storefront" data-font={config.presentation?.font} style={themeVariables(config)}>
         <a className="skip-link" href="#conteudo-principal">
           Pular para o conteúdo
         </a>
         <StoreHeader categories={categories} config={config} store={store} />
+        {!commerceEnabled ? <aside className="store-container storefront-paused" role="status">Esta loja não está recebendo novas compras agora. <Link href="/minha-conta">Consulte seus pedidos</Link> ou <a href="#contato">fale com a loja</a>.</aside> : null}
         <main id="conteudo-principal">{children}</main>
         <StoreFooter config={config} store={store} />
       </div>

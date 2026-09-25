@@ -35,7 +35,7 @@ async function main() {
 
   try {
     await database.user.upsert({
-      where: { email },
+      where: { storeId_email: { storeId: store.id, email } },
       update: { authUserId: data.user.id, storeId: store.id, name, role, isActive: true },
       create: { authUserId: data.user.id, storeId: store.id, name, email, role },
     });

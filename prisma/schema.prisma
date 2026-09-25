@@ -11,7 +11,7 @@ model Store {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
-  domain    String?
+  domain    String?  @unique
   logoUrl   String?
   whatsapp  String?
   email     String?
@@ -19,6 +19,7 @@ model Store {
   city      String?
   state     String?
   isActive  Boolean  @default(true)
+  salesAccessMode SalesAccessMode @default(ASSISTED)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -28,6 +29,32 @@ model Store {
   orders     Order[]
   settings   StoreSettings?
   emailOutbox EmailOutbox[]
+  stockAdjustments StockAdjustment[]
+  customers Customer[]
+  themeRevisions StoreThemeRevision[]
+  auditEvents StoreAuditEvent[]
+  subscription Subscription?
+  application StoreApplication?
+  directoryBinding StoreDirectoryBinding?
+  paymentAccounts PaymentAccountBinding[]
+}
+
+model StockAdjustment {
+  id             String   @id @default(cuid())
+  storeId        String
+  store          Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  actorId        String
+  productId      String
+  variantId      String?
+  requestId      String
+  quantityBefore Int
+  delta          Int
+  quantityAfter  Int
+  reason         String
+  createdAt      DateTime @default(now())
+
+  @@unique([storeId, requestId])
+  @@index([storeId, productId, createdAt])
 }
 
 model StoreSettings {
@@ -43,23 +70,161 @@ model StoreSettings {
   freeShippingFromCents Int?
   mercadoPagoPublicKey  String?
   mercadoPagoEnabled    Boolean  @default(false)
+  themeVersion          Int      @default(0)
+  themeDraftVersion     Int?
+  themePublishedVersion Int?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 }
 
 model User {
   id         String   @id @default(cuid())
-  authUserId String?  @unique
+  authUserId String?
   storeId    String
   store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   name       String
-  email      String   @unique
+  email      String
   role       UserRole @default(ADMIN)
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@index([storeId, role])
+  @@unique([storeId, authUserId])
+  @@unique([storeId, email])
+}
+
+enum SalesAccessMode {
+  LEGACY_PILOT
+  ASSISTED
+}
+
+model StoreThemeRevision {
+  id String @id @default(cuid())
+  storeId String
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  version Int
+  contractVersion Int @default(1)
+  content Json
+  actorId String
+  createdAt DateTime @default(now())
+
+  @@unique([storeId, version])
+}
+
+model StoreAuditEvent {
+  id String @id @default(cuid())
+  storeId String
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  actorId String
+  action String
+  reference String
+  reason String?
+  createdAt DateTime @default(now())
+
+  @@index([storeId, createdAt])
+}
+
+model PlatformOperator {
+  id String @id @default(cuid())
+  authUserId String @unique
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+}
+
+model StoreDirectoryBinding {
+  id String @id @default(cuid())
+  storeId String @unique
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  commerceId Int
+  origin String
+  challengeHash String
+  actorId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([origin, commerceId])
+}
+
+model Plan {
+  id String @id @default(cuid())
+  code String
+  version Int
+  name String
+  conditions String
+  priceCents Int?
+  currency String @default("BRL")
+  checkoutEnabled Boolean @default(true)
+  isPublished Boolean @default(false)
+  createdBy String
+  createdAt DateTime @default(now())
+  subscriptions Subscription[]
+  applications StoreApplication[]
+
+  @@unique([code, version])
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  ENDING
+  CANCELLED
+  SUSPENDED
+}
+
+enum ActivationOrigin {
+  ADMINISTRATIVE
+  COURTESY
+  EXTERNAL_CONFIRMATION
+}
+
+model Subscription {
+  id String @id @default(cuid())
+  storeId String @unique
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  planId String
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Restrict)
+  status SubscriptionStatus @default(PENDING)
+  startsAt DateTime?
+  endsAt DateTime?
+  activationOrigin ActivationOrigin?
+  confirmedBy String?
+  confirmationReference String?
+  acceptedPlanVersion Int
+  acceptedAt DateTime
+  acceptedBy String
+  revision Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum StoreApplicationStatus {
+  REQUESTED
+  PROVISIONED
+  REJECTED
+}
+
+model StoreApplication {
+  id String @id @default(cuid())
+  requestKey String @unique
+  requesterAuthUserId String
+  requesterName String
+  requesterEmail String
+  storeName String
+  storeSlug String
+  planId String?
+  plan Plan? @relation(fields: [planId], references: [id], onDelete: Restrict)
+  acceptedPlanVersion Int?
+  acceptedAt DateTime?
+  status StoreApplicationStatus @default(REQUESTED)
+  storeId String? @unique
+  store Store? @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  decidedBy String?
+  decidedAt DateTime?
+  decisionReason String?
+  createdAt DateTime @default(now())
+
+  @@index([requesterAuthUserId, createdAt])
 }
 
 enum UserRole {
@@ -117,6 +282,7 @@ model ProductImage {
   product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   url         String
   storagePath String? @unique
+  storageBucket String?
   alt         String?
   sortOrder   Int     @default(0)
 
@@ -141,6 +307,11 @@ model ProductVariant {
 
 model Customer {
   id        String   @id @default(cuid())
+  storeId   String?
+  store     Store?   @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  authUserId String?
+  isQuarantined Boolean @default(true)
+  legacyCustomerId String?
   name      String
   email     String?
   phone     String
@@ -148,6 +319,11 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   orders    Order[]
+
+  @@unique([id, storeId])
+  @@unique([storeId, authUserId])
+  @@index([storeId, phone])
+  @@index([legacyCustomerId])
 }
 
 model Order {
@@ -155,7 +331,7 @@ model Order {
   storeId                  String
   store                    Store             @relation(fields: [storeId], references: [id], onDelete: Restrict)
   customerId               String
-  customer                 Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  customer                 Customer          @relation(fields: [customerId, storeId], references: [id, storeId], onDelete: Restrict, onUpdate: Restrict)
   status                   OrderStatus       @default(PENDING)
   paymentStatus            PaymentStatus    @default(WAITING_PAYMENT)
   fulfillmentStatus        FulfillmentStatus @default(NOT_FULFILLED)
@@ -176,12 +352,17 @@ model Order {
   shippingState            String?
   mercadoPagoPreferenceId  String?
   mercadoPagoPaymentId     String?
+  paymentAccountKey        String?
+  paymentAccount           PaymentAccountBinding? @relation(fields: [paymentAccountKey, storeId], references: [key, storeId], onDelete: Restrict, onUpdate: Restrict)
+  paymentLegacy            Boolean @default(false)
   notes                    String?
   internalNote             String?
   items                    OrderItem[]
   paymentEvents            PaymentEvent[]
   emailOutbox              EmailOutbox[]
   inventoryStatus          InventoryStatus   @default(NOT_RESERVED)
+  operationVersion         Int               @default(0)
+  inventoryResolutions     OrderInventoryResolution[]
   reservedAt               DateTime?
   expiresAt                DateTime?
   stockCommittedAt         DateTime?
@@ -197,6 +378,59 @@ model Order {
   @@index([mercadoPagoPaymentId])
   @@index([inventoryStatus, expiresAt])
   @@index([storeId, paidAt])
+  @@unique([id, storeId])
+}
+
+model OrderInventoryResolution {
+  id String @id @default(cuid())
+  storeId String
+  orderId String
+  order Order @relation(fields: [orderId, storeId], references: [id, storeId], onDelete: Cascade)
+  actorId String
+  requestId String
+  action String
+  reason String
+  previousVersion Int
+  createdAt DateTime @default(now())
+  @@unique([storeId, requestId])
+  @@index([orderId, createdAt])
+}
+
+// Configuration identity only. Provider credentials remain server environment secrets.
+model PaymentAccountBinding {
+  key String @id
+  storeId String
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  collectorId String
+  environment String
+  createdAt DateTime @default(now())
+  orders Order[]
+  @@unique([key, storeId])
+  @@index([storeId])
+}
+
+// No cascading FK: pending object cleanup must survive catalog/store deletion.
+model StorageDeletionJob {
+  id String @id @default(cuid())
+  storeId String
+  productId String
+  imageId String? @unique
+  actorId String
+  bucket String
+  storagePath String
+  reason String
+  status String @default("PENDING")
+  attempts Int @default(0)
+  claimToken String?
+  lockedUntil DateTime?
+  nextAttemptAt DateTime @default(now())
+  lastErrorCode String?
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([bucket, storagePath])
+  @@index([status, nextAttemptAt])
+  @@index([storeId, productId, status])
 }
 
 enum InventoryStatus {

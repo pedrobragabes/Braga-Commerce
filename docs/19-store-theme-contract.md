@@ -1,5 +1,11 @@
 # Contrato de tema por loja
 
+> Revisão de 25/09/2026: a implementação v1 está descrita em
+> `21-assisted-store-lifecycle.md`. Há revisões persistidas, rascunho, publicação,
+> restauração, contraste e seções de uma lista fechada. O pedido atual permite
+> reordenar apenas essas seções suportadas. As referências a “futuramente” abaixo
+> registram a decisão original e não descrevem o estado atual do código.
+
 ## Decisão
 
 O Braga Commerce continuará usando uma composição de storefront fixa e uma

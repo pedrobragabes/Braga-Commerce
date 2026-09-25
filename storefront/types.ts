@@ -11,6 +11,13 @@ export type StorefrontTheme = {
   radius: string;
 };
 export type StorefrontConfig = {
+  presentation?: {
+    font: "modern" | "classic";
+    heroLayout: "editorial" | "simple";
+    sections: Array<"benefits" | "categories" | "featured" | "story">;
+    bannerUrl: string | null;
+    socialLinks: Array<{ network: "instagram" | "facebook"; url: string }>;
+  };
   storeSlug: string;
   announcement: string;
   brandKicker: string;

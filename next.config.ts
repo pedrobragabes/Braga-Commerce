@@ -31,6 +31,15 @@ const nextConfig: NextConfig = {
         { key: "X-Content-Type-Options", value: "nosniff" },
         { key: "X-Frame-Options", value: "DENY" },
       ],
+    }, {
+      // Private authenticated theme preview may be framed only by this app.
+      // Every other route retains DENY / frame-ancestors 'none'.
+      source: "/admin/tema/preview",
+      headers: [
+        { key: "Content-Security-Policy", value: contentSecurityPolicy.replace("frame-ancestors 'none'", "frame-ancestors 'self'") },
+        { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        { key: "Cache-Control", value: "private, no-store" },
+      ],
     }];
   },
 };

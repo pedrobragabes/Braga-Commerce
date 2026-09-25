@@ -1,4 +1,4 @@
-name: Expire pending orders
+name: Commercial maintenance
 
 on:
   schedule:
@@ -35,3 +35,13 @@ jobs:
           --request POST
           --header "Authorization: Bearer ${JOB_SECRET}"
           https://braga-commerce.vercel.app/api/jobs/emails/process
+      - name: Process durable storage cleanup
+        if: ${{ vars.STORAGE_CLEANUP_ENABLED == 'true' }}
+        env:
+          JOB_SECRET: ${{ secrets.JOB_SECRET }}
+        run: >-
+          curl --fail --silent --show-error
+          --retry 1 --retry-all-errors --max-time 60
+          --request POST
+          --header "Authorization: Bearer ${JOB_SECRET}"
+          https://braga-commerce.vercel.app/api/jobs/storage/cleanup

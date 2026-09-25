@@ -4,6 +4,8 @@ import { MercadoPagoIntegrationError } from "../../../../../lib/mercado-pago/con
 import { createOrderPreference } from "../../../../../lib/mercado-pago/preference";
 import { logEvent } from "../../../../../lib/observability/logger";
 import { enforceRateLimit, rateLimitPolicies } from "../../../../../lib/rate-limit";
+import { matchRequestStore } from "../../../../../lib/store-context";
+import { getDatabase } from "../../../../../lib/database";
 
 const preferenceRequestSchema = z.object({ orderId: z.string().min(1).max(80) }).strict();
 
@@ -19,6 +21,10 @@ export async function POST(request: Request) {
   }
 
   try {
+    const store = await matchRequestStore(request);
+    if (!store || !await getDatabase().order.findFirst({ where: { id: result.data.orderId, storeId: store.id }, select: { id: true } })) {
+      return NextResponse.json({ error: { code: "ORDER_NOT_FOUND" } }, { status: 404 });
+    }
     const preference = await createOrderPreference(result.data.orderId);
     return NextResponse.json(preference);
   } catch (error) {

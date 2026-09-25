@@ -10,7 +10,7 @@ import type {
 export class CartQuoteError extends Error {
   constructor(
     message: string,
-    public readonly code: "STORE_NOT_FOUND" | "INVALID_ITEM" | "DELIVERY_UNAVAILABLE",
+    public readonly code: "STORE_NOT_FOUND" | "STORE_UNAVAILABLE" | "INVALID_ITEM" | "DELIVERY_UNAVAILABLE",
     public readonly status = 409,
   ) {
     super(message);

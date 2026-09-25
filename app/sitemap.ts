@@ -1,13 +1,15 @@
 import type { MetadataRoute } from "next";
-import { getPublicAppUrl } from "../lib/app-url";
-import { pvModaConfig } from "../storefront/config/pv-moda";
+import { getStoreRequestOrigin } from "../lib/store-context";
+import { getRequestStore } from "../lib/store-context";
 import { getSitemapEntries } from "../storefront/data";
 
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = getPublicAppUrl();
-  const entries = await getSitemapEntries(pvModaConfig.storeSlug);
+  const baseUrl = await getStoreRequestOrigin();
+  const store = await getRequestStore();
+  if (!store.isActive) return [];
+  const entries = await getSitemapEntries(store.slug);
 
   return [
     { url: baseUrl, changeFrequency: "weekly", priority: 1 },

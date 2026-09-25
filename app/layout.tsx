@@ -19,23 +19,23 @@ const storeDisplayFont = Bodoni_Moda({
 export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
   title: {
-    default: "PV Moda Masculina",
-    template: "%s | PV Moda Masculina",
+    default: "Braga Commerce",
+    template: "%s | Braga Commerce",
   },
-  description: "Moda masculina com curadoria local, informação clara e atendimento próximo.",
+  description: "Lojas com produtos, informações claras e atendimento direto.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    siteName: "PV Moda Masculina",
-    title: "PV Moda Masculina",
-    description: "Moda masculina com curadoria local, informação clara e atendimento próximo.",
+    siteName: "Braga Commerce",
+    title: "Braga Commerce",
+    description: "Lojas com produtos, informações claras e atendimento direto.",
     url: "/",
   },
   twitter: {
     card: "summary",
-    title: "PV Moda Masculina",
-    description: "Moda masculina com curadoria local, informação clara e atendimento próximo.",
+    title: "Braga Commerce",
+    description: "Lojas com produtos, informações claras e atendimento direto.",
   },
 };
 

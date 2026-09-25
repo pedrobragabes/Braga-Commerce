@@ -3,11 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import type { FulfillmentStatus } from "../../generated/prisma/client";
 import { requireAdminAction } from "../../lib/admin-auth";
 import {
-  canTransitionFulfillment,
-  parseAdminColor,
   parseAdminInteger,
   parseAdminMoney,
   parseAdminState,
@@ -15,9 +12,12 @@ import {
 } from "../../lib/admin-rules";
 import { getDatabase } from "../../lib/database";
 import { moveStoredProductImage, removeStoredProductImage } from "../../lib/storage/product-images";
+import { adjustAvailableStock, StockAdjustmentError } from "../../lib/admin-inventory";
+import { saveOrderOperation } from "../../lib/admin-order-operation";
+import { InventoryReviewError, resolveOrderInventory } from "../../lib/order-inventory-review";
+import { retryImageCleanup } from "../../lib/storage/deletion-outbox";
 
 const idSchema = z.string().min(1).max(80);
-const optionalText = z.string().trim().max(500).optional();
 
 function checkbox(formData: FormData, name: string) {
   return formData.get(name) === "on" || formData.get(name) === "true";
@@ -43,9 +43,7 @@ export async function createProduct(formData: FormData) {
   const name = requiredText(formData, "name");
   const slug = slugifyAdminValue(String(formData.get("slug") || name));
   const categoryId = optionalFormText(formData, "categoryId", 80);
-  const stockQuantity = parseAdminInteger(String(formData.get("stockQuantity") ?? "0"));
   if (!slug) throw new Error("INVALID_SLUG");
-  if (stockQuantity === null) throw new Error("INVALID_STOCK");
 
   const database = getDatabase();
   if (categoryId) {
@@ -62,7 +60,7 @@ export async function createProduct(formData: FormData) {
       shortDescription: optionalFormText(formData, "shortDescription", 240),
       description: optionalFormText(formData, "description", 4000),
       basePriceCents: money(formData, "basePrice"),
-      stockQuantity,
+      stockQuantity: 0,
       hasVariants: checkbox(formData, "hasVariants"),
       isActive: checkbox(formData, "isActive"),
       isFeatured: checkbox(formData, "isFeatured"),
@@ -81,8 +79,7 @@ export async function updateProduct(formData: FormData) {
   const name = requiredText(formData, "name");
   const slug = slugifyAdminValue(String(formData.get("slug") || name));
   const categoryId = optionalFormText(formData, "categoryId", 80);
-  const stockQuantity = parseAdminInteger(String(formData.get("stockQuantity") ?? "0"));
-  if (!slug || stockQuantity === null) throw new Error("INVALID_PRODUCT");
+  if (!slug) throw new Error("INVALID_PRODUCT");
 
   const database = getDatabase();
   if (categoryId) {
@@ -100,8 +97,6 @@ export async function updateProduct(formData: FormData) {
       description: optionalFormText(formData, "description", 4000),
       basePriceCents: money(formData, "basePrice"),
       compareAtCents: formData.get("compareAt") ? money(formData, "compareAt") : null,
-      stockQuantity,
-      hasVariants: checkbox(formData, "hasVariants"),
       isActive: checkbox(formData, "isActive"),
       isFeatured: checkbox(formData, "isFeatured"),
     },
@@ -127,7 +122,7 @@ export async function moveProductImage(formData: FormData) {
   const productId = idSchema.parse(formData.get("productId"));
   const imageId = idSchema.parse(formData.get("imageId"));
   const direction = z.enum(["up", "down"]).parse(formData.get("direction"));
-  const product = await moveStoredProductImage({ storeId: session.storeId, productId, imageId, direction });
+  const product = await moveStoredProductImage({ userId: session.userId, storeId: session.storeId, productId, imageId, direction });
   revalidatePath(`/admin/produtos/${product.id}`);
   revalidatePath(`/produto/${product.slug}`);
 }
@@ -136,26 +131,36 @@ export async function removeProductImage(formData: FormData) {
   const session = await requireAdminAction("images:write");
   const productId = idSchema.parse(formData.get("productId"));
   const imageId = idSchema.parse(formData.get("imageId"));
-  const product = await removeStoredProductImage({ storeId: session.storeId, productId, imageId });
+  let product;
+  try { product = await removeStoredProductImage({ userId: session.userId, storeId: session.storeId, productId, imageId }); }
+  catch (error) {
+    if (error instanceof Error && error.message === "IMAGE_USED_BY_THEME") redirect(`/admin/produtos/${productId}?error=image-theme`);
+    throw error;
+  }
   revalidatePath(`/admin/produtos/${product.id}`);
   revalidatePath(`/produto/${product.slug}`);
 }
 
+export async function retryStorageCleanup(formData: FormData) {
+  const session = await requireAdminAction("images:write");
+  const jobId = idSchema.parse(formData.get("jobId"));
+  await retryImageCleanup(session, jobId);
+  revalidatePath("/admin/produtos", "layout");
+}
+
 export async function saveVariant(formData: FormData) {
-  const session = await requireAdminAction("inventory:write");
+  const session = await requireAdminAction("catalog:write");
   const productId = idSchema.parse(formData.get("productId"));
   const variantId = optionalFormText(formData, "variantId", 80);
   const product = await getDatabase().product.findFirst({ where: { id: productId, storeId: session.storeId } });
   if (!product) throw new Error("PRODUCT_NOT_FOUND");
-  const stockQuantity = parseAdminInteger(String(formData.get("stockQuantity") ?? ""));
-  if (stockQuantity === null) throw new Error("INVALID_STOCK");
+  if (!product.hasVariants) throw new Error("PRODUCT_WITHOUT_VARIANTS");
   const data = {
     name: requiredText(formData, "name", 120),
     sku: optionalFormText(formData, "sku", 80),
     size: optionalFormText(formData, "size", 40),
     color: optionalFormText(formData, "color", 60),
     priceCents: formData.get("price") ? money(formData, "price") : null,
-    stockQuantity,
     isActive: checkbox(formData, "isActive"),
   };
   const database = getDatabase();
@@ -164,14 +169,37 @@ export async function saveVariant(formData: FormData) {
     if (!variant) throw new Error("VARIANT_NOT_FOUND");
     await database.productVariant.update({ where: { id: variant.id }, data });
   } else {
-    await database.productVariant.create({ data: { productId: product.id, ...data } });
-    if (!product.hasVariants) {
-      await database.product.update({ where: { id: product.id }, data: { hasVariants: true, stockQuantity: 0 } });
-    }
+    await database.productVariant.create({ data: { productId: product.id, ...data, stockQuantity: 0 } });
   }
   revalidatePath(`/admin/produtos/${product.id}`);
   revalidatePath(`/produto/${product.slug}`);
   redirect(`/admin/produtos/${product.id}?saved=variant`);
+}
+
+export async function adjustStock(_previous: { error?: string; success?: boolean }, formData: FormData): Promise<{ error?: string; success?: boolean }> {
+  const session = await requireAdminAction("inventory:write");
+  const productId = idSchema.parse(formData.get("productId"));
+  try {
+    await adjustAvailableStock(session, {
+      productId,
+      variantId: optionalFormText(formData, "variantId", 80),
+      expectedQuantity: Number(formData.get("expectedQuantity")),
+      delta: Number(formData.get("delta")),
+      reason: String(formData.get("reason") ?? ""),
+      requestId: String(formData.get("requestId") ?? ""),
+    });
+  } catch (error) {
+    if (error instanceof StockAdjustmentError || error instanceof z.ZodError) {
+      revalidatePath(`/admin/produtos/${productId}`);
+      return { error: error instanceof StockAdjustmentError && error.code === "STOCK_CONFLICT"
+        ? "O saldo mudou. Confira a quantidade atualizada e refaça o ajuste."
+        : "Ajuste inválido. Informe uma quantidade diferente de zero e um motivo; o saldo não pode ficar negativo." };
+    }
+    throw error;
+  }
+  revalidatePath(`/admin/produtos/${productId}`);
+  revalidatePath("/produtos");
+  return { success: true };
 }
 
 export async function saveCategory(formData: FormData) {
@@ -206,21 +234,49 @@ export async function updateOrderOperation(formData: FormData) {
   const orderId = idSchema.parse(formData.get("orderId"));
   const nextStatus = z.enum([
     "NOT_FULFILLED", "PREPARING", "READY_FOR_PICKUP", "SHIPPED", "DELIVERED", "CANCELLED",
-  ]).parse(formData.get("fulfillmentStatus")) as FulfillmentStatus;
-  const database = getDatabase();
-  const order = await database.order.findFirst({ where: { id: orderId, storeId: session.storeId } });
-  if (!order) throw new Error("ORDER_NOT_FOUND");
-  if (!canTransitionFulfillment(order.fulfillmentStatus, nextStatus)) throw new Error("INVALID_FULFILLMENT_TRANSITION");
-  await database.order.update({
-    where: { id: order.id },
-    data: {
-      fulfillmentStatus: nextStatus,
-      internalNote: optionalText.parse(String(formData.get("internalNote") ?? "")) || null,
-    },
-  });
+  ]).parse(formData.get("fulfillmentStatus"));
+  try {
+    await saveOrderOperation(session, {
+      orderId, fulfillmentStatus: nextStatus, internalNote: String(formData.get("internalNote") ?? ""),
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "ORDER_NOT_READY") {
+      redirect(`/admin/pedidos/${orderId}?error=not-ready`);
+    }
+    throw error;
+  }
   revalidatePath("/admin/pedidos");
-  revalidatePath(`/admin/pedidos/${order.id}`);
-  redirect(`/admin/pedidos/${order.id}?saved=1`);
+  revalidatePath(`/admin/pedidos/${orderId}`);
+  redirect(`/admin/pedidos/${orderId}?saved=1`);
+}
+
+export async function resolveInventoryReview(_previous: { error?: string; success?: boolean }, formData: FormData): Promise<{ error?: string; success?: boolean }> {
+  const session = await requireAdminAction("orders:write");
+  const orderId = idSchema.parse(formData.get("orderId"));
+  try {
+    await resolveOrderInventory(session, {
+      orderId, requestId: String(formData.get("requestId") ?? ""),
+      expectedVersion: Number(formData.get("expectedVersion")),
+      action: formData.get("resolution"), reason: formData.get("reason"),
+    });
+  } catch (error) {
+    if (error instanceof InventoryReviewError || error instanceof z.ZodError) {
+      revalidatePath(`/admin/pedidos/${orderId}`);
+      const messages: Record<string, string> = {
+        FORBIDDEN: "Somente o proprietário ou administrador pode resolver esta revisão.",
+        INSUFFICIENT_STOCK: "Não há saldo disponível para todos os itens. Nenhuma unidade foi debitada. Confira a reposição ou cancele o atendimento e encaminhe o estorno ao provedor.",
+        ORDER_CHANGED: "O pedido mudou. Confira os dados atualizados e refaça a decisão.",
+        REVIEW_NOT_OPEN: "Esta revisão não está aberta para decisão. Confira pagamento e atendimento atuais.",
+        IDEMPOTENCY_CONFLICT: "Esta tentativa já foi usada com outra decisão. Recarregue antes de tentar novamente.",
+      };
+      return { error: error instanceof InventoryReviewError ? messages[error.code] ?? "Pedido não encontrado nesta loja." : "Informe uma decisão e um motivo entre 5 e 500 caracteres." };
+    }
+    return { error: "Não foi possível confirmar a decisão. Reenvie a mesma tentativa para consultar seu resultado com segurança." };
+  }
+  revalidatePath(`/admin/pedidos/${orderId}`);
+  revalidatePath("/admin/pedidos");
+  revalidatePath("/produtos");
+  return { success: true };
 }
 
 export async function updateStoreSettings(formData: FormData) {
@@ -228,17 +284,11 @@ export async function updateStoreSettings(formData: FormData) {
   const localDeliveryFeeCents = money(formData, "localDeliveryFee");
   const email = optionalFormText(formData, "email", 160);
   const stateInput = optionalFormText(formData, "state", 2);
-  const primaryColorInput = optionalFormText(formData, "primaryColor", 20);
-  const secondaryColorInput = optionalFormText(formData, "secondaryColor", 20);
   const state = stateInput ? parseAdminState(stateInput) : null;
-  const primaryColor = primaryColorInput ? parseAdminColor(primaryColorInput) : null;
-  const secondaryColor = secondaryColorInput ? parseAdminColor(secondaryColorInput) : null;
   const allowLocalPickup = checkbox(formData, "allowLocalPickup");
   const allowLocalDelivery = checkbox(formData, "allowLocalDelivery");
   if (email && !z.string().email().safeParse(email).success) throw new Error("INVALID_EMAIL");
   if (stateInput && !state) throw new Error("INVALID_STATE");
-  if (primaryColorInput && !primaryColor) throw new Error("INVALID_PRIMARY_COLOR");
-  if (secondaryColorInput && !secondaryColor) throw new Error("INVALID_SECONDARY_COLOR");
   if (!allowLocalPickup && !allowLocalDelivery) throw new Error("DELIVERY_METHOD_REQUIRED");
   const database = getDatabase();
   await database.$transaction([
@@ -259,16 +309,12 @@ export async function updateStoreSettings(formData: FormData) {
         allowLocalPickup,
         allowLocalDelivery,
         localDeliveryFeeCents,
-        primaryColor,
-        secondaryColor,
       },
       create: {
         storeId: session.storeId,
         allowLocalPickup,
         allowLocalDelivery,
         localDeliveryFeeCents,
-        primaryColor,
-        secondaryColor,
       },
     }),
   ]);

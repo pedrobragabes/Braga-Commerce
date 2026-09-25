@@ -14,12 +14,18 @@ import { validateMercadoPagoWebhookSignature } from "../../lib/mercado-pago/webh
 
 const originalEnvironment = process.env.MERCADO_PAGO_ENV;
 const originalWebhookSecret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
+const originalAccounts = process.env.MERCADO_PAGO_ACCOUNTS_JSON;
+const originalLegacyKey = process.env.MERCADO_PAGO_LEGACY_ACCOUNT_KEY;
 
 afterEach(() => {
   if (originalEnvironment === undefined) delete process.env.MERCADO_PAGO_ENV;
   else process.env.MERCADO_PAGO_ENV = originalEnvironment;
   if (originalWebhookSecret === undefined) delete process.env.MERCADO_PAGO_WEBHOOK_SECRET;
   else process.env.MERCADO_PAGO_WEBHOOK_SECRET = originalWebhookSecret;
+  if (originalAccounts === undefined) delete process.env.MERCADO_PAGO_ACCOUNTS_JSON;
+  else process.env.MERCADO_PAGO_ACCOUNTS_JSON = originalAccounts;
+  if (originalLegacyKey === undefined) delete process.env.MERCADO_PAGO_LEGACY_ACCOUNT_KEY;
+  else process.env.MERCADO_PAGO_LEGACY_ACCOUNT_KEY = originalLegacyKey;
 });
 
 describe("Mercado Pago configuration", () => {
@@ -70,23 +76,25 @@ describe("Mercado Pago webhook signature", () => {
     const secret = "test-webhook-secret";
     const dataId = "123456";
     const requestId = "request-abc";
-    const timestamp = 1_720_000_000_000;
+    const timestamp = 1_720_000_000;
     const manifest = `id:${dataId};request-id:${requestId};ts:${timestamp};`;
     const signature = createHmac("sha256", secret).update(manifest).digest("hex");
     process.env.MERCADO_PAGO_WEBHOOK_SECRET = secret;
+    process.env.MERCADO_PAGO_ACCOUNTS_JSON = JSON.stringify({ version: 1, accounts: [{ key: "fixture", storeId: "fixture-store", collectorId: "1", environment: "sandbox", accessToken: "synthetic-test-token", webhookSecret: secret, newCheckouts: true }] });
+    process.env.MERCADO_PAGO_LEGACY_ACCOUNT_KEY = "fixture";
 
     expect(() => validateMercadoPagoWebhookSignature({
       signature: `ts=${timestamp},v1=${signature}`,
       requestId,
       dataId,
-      now: () => timestamp,
+      now: () => timestamp * 1000,
     })).not.toThrow();
 
     expect(() => validateMercadoPagoWebhookSignature({
       signature: `ts=${timestamp},v1=invalid`,
       requestId,
       dataId,
-      now: () => timestamp,
+      now: () => timestamp * 1000,
     })).toThrow();
   });
 });

@@ -1,12 +1,13 @@
 import { getDatabase } from "./database";
 import { releaseInventory } from "./inventory";
+import { lockOrder } from "./order-lock";
 
 export async function expirePendingOrders(now = new Date(), batchSize = 50) {
   const database = getDatabase();
   const candidates = await database.order.findMany({
     where: {
       inventoryStatus: "RESERVED",
-      paymentStatus: "WAITING_PAYMENT",
+      paymentStatus: { in: ["WAITING_PAYMENT", "FAILED"] },
       expiresAt: { lte: now },
     },
     orderBy: { expiresAt: "asc" },
@@ -17,6 +18,7 @@ export async function expirePendingOrders(now = new Date(), batchSize = 50) {
   let expired = 0;
   for (const candidate of candidates) {
     const released = await database.$transaction(async (transaction) => {
+      await lockOrder(transaction, candidate.id);
       const order = await transaction.order.findUnique({
         where: { id: candidate.id },
         select: {
@@ -32,10 +34,11 @@ export async function expirePendingOrders(now = new Date(), batchSize = 50) {
         where: {
           id: order.id,
           inventoryStatus: "RESERVED",
-          paymentStatus: "WAITING_PAYMENT",
+          paymentStatus: { in: ["WAITING_PAYMENT", "FAILED"] },
           expiresAt: { lte: now },
         },
         data: {
+          operationVersion: { increment: 1 },
           inventoryStatus: "RELEASED",
           stockReleasedAt: now,
           status: "CANCELLED",
@@ -48,12 +51,12 @@ export async function expirePendingOrders(now = new Date(), batchSize = 50) {
       await releaseInventory(transaction, order.items);
       if (order.customerEmail) {
         await transaction.emailOutbox.upsert({
-          where: { eventKey: `order:${order.id}:cancelled` },
+          where: { eventKey: `order:${order.id}:order_cancelled` },
           update: {},
           create: {
             storeId: order.storeId,
             orderId: order.id,
-            eventKey: `order:${order.id}:cancelled`,
+            eventKey: `order:${order.id}:order_cancelled`,
             type: "ORDER_CANCELLED",
           },
         });

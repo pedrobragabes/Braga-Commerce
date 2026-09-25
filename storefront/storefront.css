@@ -3234,3 +3234,11 @@
     transition-duration: 0.01ms !important;
   }
 }
+.storefront[data-font="modern"] { --font-store-display: var(--font-store-body); }
+.hero-section[data-layout="simple"] .hero-grid { grid-template-columns: 1fr 1fr; }
+.hero-section[data-layout="simple"] .hero-media-detail,
+.hero-section[data-layout="simple"] .hero-signature,
+.hero-section[data-layout="simple"] .hero-note { display: none; }
+.theme-banner { position: absolute; inset: 0; background-size: cover; background-position: center; z-index: 3; border-radius: var(--store-radius); }
+@media (max-width: 768px) { .hero-section[data-layout="simple"] .hero-grid { grid-template-columns: 1fr; } }
+.storefront-paused { padding-block: 1rem; background: var(--store-brand-soft); color: var(--store-ink); }

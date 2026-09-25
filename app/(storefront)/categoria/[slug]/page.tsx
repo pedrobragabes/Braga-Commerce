@@ -2,19 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductCard } from "../../../../storefront/components/product-card";
-import { pvModaConfig } from "../../../../storefront/config/pv-moda";
+import { getRequestStoreSlug } from "../../../../lib/store-context";
 import { getCatalogProducts, getStoreNavigation } from "../../../../storefront/data";
 
 type CategoryPageProps = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const navigation = await getStoreNavigation(pvModaConfig.storeSlug);
+  const navigation = await getStoreNavigation(await getRequestStoreSlug());
   const category = navigation?.categories.find((item) => item.slug === slug);
   return {
     title: category?.name ?? "Categoria",
     description:
-      category?.description ?? `Confira a seleção de ${category?.name ?? "produtos"} da PV Moda.`,
+      category?.description ?? `Confira a seleção de ${category?.name ?? "produtos"} da loja.`,
     alternates: { canonical: `/categoria/${slug}` },
   };
 }
@@ -22,8 +22,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
   const [navigation, products] = await Promise.all([
-    getStoreNavigation(pvModaConfig.storeSlug),
-    getCatalogProducts(pvModaConfig.storeSlug, { categorySlug: slug }),
+    getStoreNavigation(await getRequestStoreSlug()),
+    getCatalogProducts(await getRequestStoreSlug(), { categorySlug: slug }),
   ]);
   const category = navigation?.categories.find((item) => item.slug === slug);
 
@@ -37,7 +37,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           <h1>{category.name}</h1>
           <p>
             {category.description ??
-              `${products.length} ${products.length === 1 ? "peça selecionada" : "peças selecionadas"} pela PV Moda.`}
+              `${products.length} ${products.length === 1 ? "peça selecionada" : "peças selecionadas"} nesta categoria.`}
           </p>
         </div>
         {products.length ? (
@@ -49,7 +49,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         ) : (
           <section aria-labelledby="empty-category-title" className="empty-state storefront-state">
             <span aria-hidden="true" className="storefront-state__mark">
-              PV
+              +
             </span>
             <p className="section-eyebrow">Novidades a caminho</p>
             <h2 id="empty-category-title">Esta seleção está sendo renovada.</h2>

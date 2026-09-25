@@ -16,6 +16,8 @@ export const rateLimitPolicies = {
   betaPassword: { name: "beta-password", limit: 10, windowSeconds: 900 },
   adminLoginIp: { name: "admin-login-ip", limit: 30, windowSeconds: 900 },
   adminLoginAccount: { name: "admin-login-account", limit: 8, windowSeconds: 900 },
+  customerAuthIp: { name: "customer-auth-ip", limit: 30, windowSeconds: 900 },
+  customerAuthAccount: { name: "customer-auth-account", limit: 8, windowSeconds: 900 },
 } satisfies Record<string, RateLimitPolicy>;
 
 export class RateLimitConfigurationError extends Error {}

@@ -24,11 +24,11 @@ function HeroProduct({
       <ProductArtwork
         categorySlug={product?.category?.slug}
         imageUrl={product?.images[0]?.url}
-        label={product?.name ?? "Seleção PV Moda"}
+        label={product?.name ?? "Seleção da loja"}
       />
       <span className="hero-media-index">{index}</span>
       <span className="hero-media-copy">
-        <small>{product?.category?.name ?? "Curadoria PV"}</small>
+        <small>{product?.category?.name ?? "Destaques"}</small>
         <strong>{product?.name ?? "Essenciais bem escolhidos"}</strong>
         {product ? <b>{formatCurrency(product.basePriceCents)}</b> : null}
       </span>
@@ -56,7 +56,7 @@ export function StoreHero({
   products: StorefrontProduct[];
 }) {
   return (
-    <section className="hero-section">
+    <section className="hero-section" data-layout={config.presentation?.heroLayout}>
       <div className="store-container hero-grid">
         <div className="hero-copy">
           <p className="section-eyebrow">{config.hero.eyebrow}</p>
@@ -76,20 +76,21 @@ export function StoreHero({
               <strong>01</strong> Curadoria local
             </span>
             <span>
-              <strong>02</strong> Estoque por tamanho
+              <strong>02</strong> Informações atualizadas
             </span>
           </div>
         </div>
-        <div className="hero-editorial" aria-label="Seleção editorial PV Moda">
+        <div className="hero-editorial" aria-label="Seleção da loja">
+          {config.presentation?.bannerUrl ? <div className="theme-banner" role="img" aria-label={config.hero.title} style={{ backgroundImage: "url(" + JSON.stringify(config.presentation.bannerUrl) + ")" }} /> : null}
           <span className="hero-badge">{config.hero.badge}</span>
           <HeroProduct className="hero-media-lead" index="01" product={products[0]} />
           <HeroProduct className="hero-media-detail" index="02" product={products[1]} />
           <span aria-hidden="true" className="hero-signature">
-            PV / 26
+
           </span>
           <div className="hero-note">
             <span>Seleção da semana</span>
-            <p>Texturas, cortes e cores para usar mais de uma vez.</p>
+            <p>Escolha seus produtos com informações da própria loja.</p>
           </div>
         </div>
       </div>
@@ -124,7 +125,7 @@ export function CategorySection({ categories }: { categories: StorefrontCategory
         <div className="store-container">
           <div className="storefront-state">
             <span aria-hidden="true" className="storefront-state__mark">
-              PV
+              +
             </span>
             <p className="section-eyebrow">Coleção em movimento</p>
             <h2>Novas categorias estão sendo preparadas.</h2>
@@ -193,7 +194,7 @@ export function FeaturedSection({ products }: { products: StorefrontProduct[] })
         <div className="store-container">
           <div className="storefront-state featured-empty">
             <span aria-hidden="true" className="storefront-state__mark">
-              PV
+              +
             </span>
             <p className="section-eyebrow">Próxima seleção</p>
             <h2>Os destaques da vitrine estão sendo renovados.</h2>
@@ -214,8 +215,8 @@ export function FeaturedSection({ products }: { products: StorefrontProduct[] })
       <div className="store-container">
         <div className="section-heading light">
           <div>
-            <p className="section-eyebrow">Escolhas da PV</p>
-            <h2>Peças para usar agora — e depois.</h2>
+            <p className="section-eyebrow">Destaques da loja</p>
+            <h2>Conheça nossos produtos.</h2>
           </div>
           <Link href="/produtos">
             Ver coleção <StoreIcon name="arrow" size={18} />
@@ -242,11 +243,11 @@ export function StoreStory({
     <section className="story-section" id="sobre">
       <div className="store-container story-grid">
         <div className="story-stamp">
-          <span>PV</span>
+          <span>{store.name.slice(0, 2).toUpperCase()}</span>
           <small>
-            {store.city ?? "Moda"}
+            {store.city ?? "Atendimento"}
             <br />
-            {store.state ?? "Masculina"}
+            {store.state ?? "local"}
           </small>
         </div>
         <div>

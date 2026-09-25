@@ -28,7 +28,7 @@ export default async function AdminLoginPage({
           <strong>Braga Commerce</strong>
         </Link>
         <div>
-          <p className="admin-kicker">Caderno de operação · PV Moda</p>
+          <p className="admin-kicker">Operação da loja</p>
           <h1>
             A loja aberta.
             <br />A operação em ordem.

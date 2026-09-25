@@ -94,7 +94,7 @@ export function ProductImageManager({
                   <form
                     action={removeProductImage}
                     onSubmit={(event) => {
-                      if (!window.confirm("Remover esta imagem do produto e do Storage?")) {
+                      if (!window.confirm("Remover esta imagem da galeria? A exclusão do arquivo será processada automaticamente.")) {
                         event.preventDefault();
                       }
                     }}

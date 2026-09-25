@@ -1,5 +1,7 @@
 # Braga Commerce
 
+**Estado atual: checkpoint WIP em main.** Código e documentação consolidados por autorização de Pedro; [verificações, limites e próxima fatia](docs/CONSOLIDACAO-MAIN-2026-09-25.md). Homologação e produção continuam pendentes.
+
 E-commerce enxuto para pequenos comércios locais, com a **PV Moda Masculina**
 como loja piloto. A aplicação reúne vitrine, carrinho, checkout sem cadastro,
 pagamento via Mercado Pago e um painel operacional protegido por funções e loja.

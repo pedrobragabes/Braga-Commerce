@@ -36,3 +36,34 @@ jobs:
         run: npm run typecheck
       - name: Build application
         run: npm run build
+  commerce-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: braga_integrity_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d braga_integrity_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      BRAGA_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/braga_integrity_test
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Use Node.js 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.18.0
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Migrate empty database and test commerce concurrency
+        run: npm run test:integration

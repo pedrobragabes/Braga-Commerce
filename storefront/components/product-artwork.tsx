@@ -16,6 +16,7 @@ function FashionShape({ categorySlug }: { categorySlug: string }) {
     );
   }
 
+  if (!["camisas", "camisetas", "polos"].includes(categorySlug)) return <path d="M45 45h110v110H45z M45 45l55 35 55-35 M100 80v75" fill="none" stroke="currentColor" strokeWidth="6" />;
   const isShirt = categorySlug === "camisas";
   return (
     <>
@@ -64,13 +65,13 @@ const artworkDirections: Record<string, { edition: string; kicker: string; capti
 };
 
 const defaultArtworkDirection = {
-  edition: "PV / MENSWEAR",
-  kicker: "Curadoria masculina",
-  caption: "Estilo contemporâneo · Braga",
+  edition: "PRODUTO",
+  kicker: "Imagem não disponível",
+  caption: "Consulte os detalhes com a loja",
 };
 
 export function ProductArtwork({
-  categorySlug = "camisetas",
+  categorySlug = "",
   imageUrl,
   label,
   compact = false,
@@ -110,7 +111,7 @@ export function ProductArtwork({
     >
       <div aria-hidden="true" className="artwork-grid" />
       <div aria-hidden="true" className="artwork-header">
-        <span className="artwork-monogram">PV / MODA</span>
+        <span className="artwork-monogram">IMAGEM ILUSTRATIVA</span>
         <span className="artwork-edition">{direction.edition}</span>
       </div>
       <svg aria-hidden="true" className="artwork-shape" viewBox="0 0 200 200">

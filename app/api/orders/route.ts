@@ -4,6 +4,8 @@ import { createPendingOrder, isInventoryReservationError } from "../../../lib/or
 import { logEvent } from "../../../lib/observability/logger";
 import { checkoutRequestSchema } from "../../../storefront/checkout/contracts";
 import { enforceRateLimit, rateLimitPolicies } from "../../../lib/rate-limit";
+import { getCustomerSession } from "../../../lib/customer-auth";
+import { matchRequestStore } from "../../../lib/store-context";
 
 export async function POST(request: Request) {
   const limited = await enforceRateLimit(request, rateLimitPolicies.order);
@@ -17,7 +19,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const order = await createPendingOrder(result.data);
+    if (!await matchRequestStore(request, result.data.storeSlug)) {
+      return NextResponse.json({ error: { code: "STORE_NOT_FOUND", message: "Loja não encontrada." } }, { status: 404 });
+    }
+    const identity = await getCustomerSession();
+    if (result.data.accountRequired && !identity) {
+      return NextResponse.json({ error: { code: "SESSION_EXPIRED", message: "Sua sessão expirou. Entre novamente para concluir o pedido com sua conta." } }, { status: 401 });
+    }
+    const order = await createPendingOrder(result.data, identity);
     return NextResponse.json({ orderId: order.id, status: order.status, totalCents: order.totalCents }, { status: 201 });
   } catch (error) {
     if (error instanceof CartQuoteError) {

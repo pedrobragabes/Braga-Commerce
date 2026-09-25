@@ -6,8 +6,17 @@ import {
   reserveInventory,
 } from "./inventory";
 import type { CheckoutRequest } from "../storefront/checkout/contracts";
+import { z } from "zod";
+import { assertNewPurchasesAllowed } from "./store-lifecycle";
 
-export async function createPendingOrder(payload: CheckoutRequest) {
+export type OrderCustomerIdentity = { authUserId: string; email: string };
+
+export function resolveCheckoutEmail(submittedEmail: string | null | undefined, identity?: OrderCustomerIdentity | null) {
+  return identity?.email.trim().toLowerCase() ?? (submittedEmail?.trim().toLowerCase() || null);
+}
+
+export async function createPendingOrder(payload: CheckoutRequest, identity?: OrderCustomerIdentity | null) {
+  if (identity) identity = z.object({ authUserId: z.string().min(1).max(80), email: z.email() }).parse({ authUserId: identity.authUserId, email: identity.email });
   const quote = await quoteCart(payload.storeSlug, payload.items, payload.deliveryMethod);
   if (quote.issues.length) {
     throw new CartQuoteError(quote.issues[0], "INVALID_ITEM");
@@ -15,20 +24,22 @@ export async function createPendingOrder(payload: CheckoutRequest) {
 
   const database = getDatabase();
   return database.$transaction(async (transaction) => {
+    await assertNewPurchasesAllowed(transaction, quote.storeId);
     const now = new Date();
     await reserveInventory(transaction, quote.storeId, quote.items);
 
-    const existingCustomer = await transaction.customer.findFirst({
-      where: { phone: payload.customer.phone },
-      orderBy: { updatedAt: "desc" },
-    });
-    const customer = existingCustomer
-      ? await transaction.customer.update({
-          where: { id: existingCustomer.id },
-          data: { name: payload.customer.name, email: payload.customer.email || null },
+    const effectiveEmail = resolveCheckoutEmail(payload.customer.email, identity);
+    const contact = { name: payload.customer.name, phone: payload.customer.phone, email: effectiveEmail };
+    // Only a server-verified authentication ID can reuse an account identity.
+    // Guest contacts are independent, even when their phone/email matches.
+    const customer = identity
+      ? await transaction.customer.upsert({
+          where: { storeId_authUserId: { storeId: quote.storeId, authUserId: identity.authUserId } },
+          update: contact,
+          create: { ...contact, storeId: quote.storeId, authUserId: identity.authUserId, isQuarantined: false },
         })
       : await transaction.customer.create({
-          data: { name: payload.customer.name, phone: payload.customer.phone, email: payload.customer.email || null },
+          data: { ...contact, storeId: quote.storeId, isQuarantined: false },
         });
 
     const order = await transaction.order.create({
@@ -41,7 +52,7 @@ export async function createPendingOrder(payload: CheckoutRequest) {
         deliveryMethod: payload.deliveryMethod,
         customerName: payload.customer.name,
         customerPhone: payload.customer.phone,
-        customerEmail: payload.customer.email || null,
+        customerEmail: effectiveEmail,
         shippingZipCode: payload.deliveryMethod === "LOCAL_DELIVERY" ? payload.address?.zipCode : null,
         shippingStreet: payload.deliveryMethod === "LOCAL_DELIVERY" ? payload.address?.street : null,
         shippingNumber: payload.deliveryMethod === "LOCAL_DELIVERY" ? payload.address?.number : null,
@@ -69,7 +80,7 @@ export async function createPendingOrder(payload: CheckoutRequest) {
       select: { id: true, storeId: true, status: true, totalCents: true, createdAt: true, expiresAt: true },
     });
 
-    if (payload.customer.email) {
+    if (effectiveEmail) {
       await transaction.emailOutbox.create({
         data: {
           storeId: order.storeId,

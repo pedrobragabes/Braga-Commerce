@@ -46,7 +46,7 @@ export function ProductGallery({
           >
             {images.length
               ? `${String(selectedIndex + 1).padStart(2, "0")} / ${String(images.length).padStart(2, "0")}`
-              : "PV / 01"}
+              : "Imagem do produto"}
           </span>
         </figcaption>
       </figure>

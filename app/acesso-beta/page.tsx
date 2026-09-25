@@ -15,11 +15,11 @@ export default async function BetaAccessPage({
   return (
     <main className="beta-access-page">
       <section className="beta-access-card">
-        <span className="beta-access-mark" aria-hidden="true">PV</span>
+        <span className="beta-access-mark" aria-hidden="true">BC</span>
         <p className="section-eyebrow">Vitrine em preparação</p>
         <h1>Acesso reservado ao beta.</h1>
         <p>
-          A PV Moda ainda está em validação. Digite a senha compartilhada pelo
+          Esta loja ainda está em validação. Digite a senha compartilhada pelo
           responsável para visualizar a loja.
         </p>
         {erro === "1" ? (

@@ -1,6 +1,6 @@
 import type { Prisma } from "../../generated/prisma/client";
 import { getDatabase } from "../database";
-import { getPublicAppUrl } from "../mercado-pago/config";
+import { canonicalStoreUrl } from "../directory-bridge";
 import { isEmailDriverReady, sendEmail } from "./driver";
 import { renderOrderEmail } from "./templates";
 
@@ -23,7 +23,8 @@ export function getEmailOutboxCandidateWhere(now: Date): Prisma.EmailOutboxWhere
 
 function errorCode(error: unknown) {
   const message = error instanceof Error ? error.message : "UNKNOWN";
-  return message.replace(/[^A-Z0-9_-]/gi, "_").slice(0, 80);
+  return /^EMAIL_(PROVIDER_\d{3}|PROVIDER_CONFIG_MISSING|DRIVER_UNAVAILABLE|CAPTURE_FAILED|EVENT_INVALID|ORIGIN_NOT_CONFIGURED)$/.test(message)
+    ? message : "EMAIL_SEND_FAILED";
 }
 
 export async function processEmailOutbox(now = new Date(), batchSize = 20) {
@@ -49,7 +50,7 @@ export async function processEmailOutbox(now = new Date(), batchSize = 20) {
     const event = await database.emailOutbox.findUnique({
       where: { id: candidate.id },
       include: {
-        store: { select: { name: true } },
+        store: { select: { name: true, slug: true, domain: true } },
         order: {
           select: {
             id: true,
@@ -71,7 +72,9 @@ export async function processEmailOutbox(now = new Date(), batchSize = 20) {
     }
 
     try {
-      const orderUrl = `${getPublicAppUrl()}/pedido/${event.order.id}`;
+      const origin = canonicalStoreUrl(event.store);
+      if (!origin) throw new Error("EMAIL_ORIGIN_NOT_CONFIGURED");
+      const orderUrl = `${origin}/pedido/${event.order.id}`;
       const template = renderOrderEmail(event.type, event.order, event.store.name, orderUrl);
       await sendEmail({ ...template, to: event.order.customerEmail, eventId: event.id });
       await database.emailOutbox.update({

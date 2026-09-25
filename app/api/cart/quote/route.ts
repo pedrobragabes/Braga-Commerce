@@ -3,6 +3,7 @@ import { CartQuoteError, quoteCart } from "../../../../lib/cart-quote";
 import { logEvent } from "../../../../lib/observability/logger";
 import { quoteRequestSchema } from "../../../../storefront/checkout/contracts";
 import { enforceRateLimit, rateLimitPolicies } from "../../../../lib/rate-limit";
+import { matchRequestStore } from "../../../../lib/store-context";
 
 export async function POST(request: Request) {
   const limited = await enforceRateLimit(request, rateLimitPolicies.quote);
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    if (!await matchRequestStore(request, result.data.storeSlug)) return NextResponse.json({ error: { code: "STORE_NOT_FOUND" } }, { status: 404 });
     const quote = await quoteCart(result.data.storeSlug, result.data.items);
     return NextResponse.json({
       items: quote.items,

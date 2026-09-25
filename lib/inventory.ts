@@ -24,7 +24,10 @@ export async function reserveInventory(
   storeId: string,
   items: InventoryLine[],
 ) {
-  for (const item of items) {
+  // The same deterministic row order is used for reserve/release/review, including
+  // baskets containing the same products in a different display order.
+  for (const item of [...items].sort((a, b) => `${a.productId}:${a.variantId ?? ""}`.localeCompare(`${b.productId}:${b.variantId ?? ""}`))) {
+    if (!Number.isSafeInteger(item.quantity) || item.quantity <= 0) throw new InventoryReservationError();
     const result = item.variantId
       ? await transaction.productVariant.updateMany({
           where: {
@@ -55,7 +58,7 @@ export async function releaseInventory(
   transaction: Prisma.TransactionClient,
   items: InventoryLine[],
 ) {
-  for (const item of items) {
+  for (const item of [...items].sort((a, b) => `${a.productId}:${a.variantId ?? ""}`.localeCompare(`${b.productId}:${b.variantId ?? ""}`))) {
     if (item.variantId) {
       await transaction.productVariant.update({
         where: { id: item.variantId },
