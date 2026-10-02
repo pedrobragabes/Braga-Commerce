@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "store": {
+    "id": "store-contract-2",
+    "displayName": "Loja sintética catálogo",
+    "canonicalUrl": "https://synthetic-shop.example.test",
+    "commerceEnabled": true,
+    "catalogSharingEnabled": true,
+    "directoryBinding": {
+      "commerceId": 22,
+      "origin": "https://directory.example.test",
+      "challengeHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  "emittedAt": "2026-10-02T20:00:00.000Z",
+  "expiresAt": "2026-10-02T20:01:00.000Z",
+  "projectionRevision": "revision-contract-2",
+  "items": [
+    {
+      "id": "product-contract-2",
+      "slug": "produto-sintetico",
+      "name": "Produto sintético",
+      "canonicalUrl": "https://synthetic-shop.example.test/produto/produto-sintetico",
+      "imageUrl": null,
+      "availability": "available",
+      "price": { "currency": "BRL", "min": 5000, "max": 5000 }
+    }
+  ]
+}

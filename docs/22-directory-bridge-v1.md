@@ -3,6 +3,8 @@
 O produtor não consulta nem escreve no banco BES. A primeira entrega é um deep
 link autorizado; não anuncia sincronização de catálogo, SSO ou checkout no BES.
 
+O [produtor v2 de amostra de catálogo](DIRECTORY-CATALOG-V2-2026-10-02.md) tem flag/chave/consentimento próprios, desativados por padrão. Vínculo e projeção v1 permanecem compatíveis; o aceite técnico do contrato não autoriza automaticamente lojas reais.
+
 ## HTTP
 
 `GET /api/integrations/bes/v1/stores/[externalStoreId]`

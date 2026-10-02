@@ -140,6 +140,12 @@ model StoreDirectoryBinding {
   origin String
   challengeHash String
   actorId String
+  catalogSharingEnabled Boolean @default(false)
+  catalogConsentActorId String?
+  catalogConsentActorUpdatedAt DateTime?
+  catalogConsentAt DateTime?
+  catalogConsentScopeVersion Int?
+  catalogConsentRevision String @default(dbgenerated("(gen_random_uuid())::text"))
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
