@@ -18,7 +18,9 @@ const betaPublicPaths = [
 ];
 
 function isBetaPublicPath(pathname: string) {
-  return betaPublicPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  // Only this service-key-protected v2 endpoint bypasses the human beta gate.
+  return /^\/api\/integrations\/bes\/v2\/stores\/[A-Za-z0-9][A-Za-z0-9_-]{0,79}\/catalog$/.test(pathname)
+    || betaPublicPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
 async function enforceBetaAccess(request: NextRequest) {

@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from "node:crypto";
+import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { getDatabase } from "./database";
 import { can } from "./admin-auth";
@@ -43,8 +43,11 @@ export async function saveDirectoryBinding(actor: { userId: string; storeId: str
     await lockStore(transaction, actor.storeId);
     // The one-time secret is never persisted or logged, only its proof hash.
     const challengeHash = createHash("sha256").update(data.challenge).digest("hex");
-    const value = { commerceId: data.commerceId, origin: origin.origin, challengeHash, actorId: actor.userId };
-    const binding = await transaction.storeDirectoryBinding.upsert({ where: { storeId: actor.storeId }, update: value, create: { storeId: actor.storeId, ...value } });
+    // A new proof or rebinding requires a fresh, separate catalog opt-in.
+    const value = { commerceId: data.commerceId, origin: origin.origin, challengeHash, actorId: actor.userId,
+      catalogSharingEnabled: false, catalogConsentActorId: null, catalogConsentActorUpdatedAt: null,
+      catalogConsentAt: null, catalogConsentScopeVersion: null };
+    const binding = await transaction.storeDirectoryBinding.upsert({ where: { storeId: actor.storeId }, update: { ...value, catalogConsentRevision: randomUUID() }, create: { storeId: actor.storeId, ...value } });
     await transaction.storeAuditEvent.create({ data: { storeId: actor.storeId, actorId: actor.userId, action: "DIRECTORY_BINDING_SET", reference: binding.id } });
     return { commerceId: binding.commerceId, origin: binding.origin };
   });
@@ -61,7 +64,9 @@ export async function removeDirectoryBinding(actor: { userId: string; storeId: s
 }
 
 export async function getDirectoryProjection(storeId: string) {
-  const store = await getDatabase().store.findUnique({ where: { id: storeId }, include: { directoryBinding: true, subscription: { include: { plan: true } } } });
+  const store = await getDatabase().store.findUnique({ where: { id: storeId }, include: {
+    directoryBinding: { select: { commerceId: true, origin: true, challengeHash: true } }, subscription: { include: { plan: true } },
+  } });
   if (!store) return null;
   const canonicalUrl = canonicalStoreUrl(store);
   if (!canonicalUrl) return null;
